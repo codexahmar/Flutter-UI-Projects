@@ -33,7 +33,7 @@ class _SignUpState extends State<SignUp> {
               const SizedBox(height: 25),
               const Buttons(
                 text: "Use phone number",
-                textStyle: TextStyle(color: Colors.red),
+                textStyle: TextStyle(color: Color(0xFFE94057)),
                 color: Colors.white,
                 elevation: 3,
                 destination: Verification(),
@@ -87,7 +87,7 @@ class _SignUpState extends State<SignUp> {
                         padding: const EdgeInsets.all(8),
                         child: const Icon(
                           Icons.facebook,
-                          color: Colors.red,
+                          color: Color(0xFFE94057),
                           size: 40,
                         ),
                       ),
@@ -108,7 +108,7 @@ class _SignUpState extends State<SignUp> {
                         padding: const EdgeInsets.all(8),
                         child: const Icon(
                           Icons.apple,
-                          color: Colors.red,
+                          color: Color(0xFFE94057),
                           size: 40,
                         ),
                       ),
@@ -129,7 +129,7 @@ class _SignUpState extends State<SignUp> {
                         padding: const EdgeInsets.all(8),
                         child: const Icon(
                           Icons.telegram,
-                          color: Colors.red,
+                          color: Color(0xFFE94057),
                           size: 40,
                         ),
                       ),

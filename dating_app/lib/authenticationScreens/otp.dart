@@ -20,7 +20,7 @@ class _OtpState extends State<Otp> {
   void initState() {
     super.initState();
     // Initialize the timer
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_start == 0) {
         timer.cancel();
       } else {
@@ -43,7 +43,10 @@ class _OtpState extends State<Otp> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.red),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: Color(0xFFE94057),
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -59,18 +62,18 @@ class _OtpState extends State<Otp> {
               _start > 0
                   ? "00:${_start < 10 ? '0$_start' : _start}"
                   : "Time's up!",
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w700,
                   color: Colors.black),
             ),
-            SizedBox(height: 35),
-            Text(
+            const SizedBox(height: 35),
+            const Text(
               "Type the verification code \nwe've sent you.",
               style: TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             PinCodeTextField(
               length: 6,
               obscureText: false,
@@ -81,18 +84,18 @@ class _OtpState extends State<Otp> {
                 borderRadius: BorderRadius.circular(15),
                 fieldHeight: 70,
                 fieldWidth: 60,
-                activeFillColor: Colors.red,
-                inactiveFillColor: Colors.white,
-                selectedFillColor: Colors.red,
-                activeColor: Colors.red,
-                inactiveColor: Colors.red,
-                selectedColor: Colors.red,
+                activeFillColor: Color(0xFFE94057),
+                inactiveFillColor: Colors.transparent,
+                selectedFillColor: Colors.transparent,
+                activeColor: Color(0xFFE94057),
+                inactiveColor: Color(0xFFE94057),
+                selectedColor: Color(0xFFE94057),
               ),
-              cursorColor: Colors.red,
-              animationDuration: Duration(milliseconds: 300),
+              cursorColor: Color(0xFFE94057),
+              animationDuration: const Duration(milliseconds: 300),
               backgroundColor: Colors.transparent,
               enableActiveFill: true,
-              textStyle: TextStyle(color: Colors.white),
+              textStyle: const TextStyle(color: Colors.white),
               onChanged: (value) {
                 setState(() {
                   otp = value;
@@ -102,15 +105,19 @@ class _OtpState extends State<Otp> {
                 // Navigate to the next screen when OTP is complete
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProfileDetails()),
+                  MaterialPageRoute(
+                      builder: (context) => const ProfileDetails()),
                 );
               },
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 60),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 70),
-              child: Buttons(text: "Send again", color: Colors.red),
+            const SizedBox(height: 60),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 70),
+              child: Buttons(
+                text: "Send again",
+                color: Color(0xFFE94057),
+              ),
             ),
           ],
         ),

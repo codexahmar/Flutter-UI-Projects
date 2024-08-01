@@ -62,9 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 20),
                   GestureDetector(
-                    onTap: () {
-                      // Navigate to the signup screen or handle the action
-                    },
+                    onTap: () {},
                     child: RichText(
                       text: const TextSpan(
                         text: "Already have an account? ",
