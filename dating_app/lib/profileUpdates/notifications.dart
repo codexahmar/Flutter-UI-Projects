@@ -1,3 +1,4 @@
+import 'package:dating_app/bottomNavBar/explore_people.dart';
 import 'package:dating_app/widgets/buttons.dart';
 import 'package:flutter/material.dart';
 
@@ -61,6 +62,7 @@ class _NotificationsState extends State<Notifications> {
           const Buttons(
             text: "i want to be notified",
             color: Colors.red,
+            destination: ExplorePeople(),
           )
         ],
       ),
