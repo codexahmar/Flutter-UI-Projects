@@ -12,7 +12,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
     final navBarController = Provider.of<BottomNavBarController>(context);
 
     return BottomNavigationBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.white, // Background color
       currentIndex: navBarController.currentIndex,
       onTap: (index) {
         navBarController.setIndex(index);
@@ -20,52 +20,43 @@ class CustomBottomNavigationBar extends StatelessWidget {
         switch (index) {
           case 0:
             Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => ExplorePeople()));
+                MaterialPageRoute(builder: (context) => const ExplorePeople()));
             break;
           case 1:
             Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => MatchesScreen()));
+                MaterialPageRoute(builder: (context) => const MatchesScreen()));
             break;
           case 2:
             Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => ChatsScreen()));
+                MaterialPageRoute(builder: (context) => const ChatsScreen()));
             break;
           case 3:
             Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()));
+                MaterialPageRoute(builder: (context) => const ProfileScreen()));
             break;
         }
       },
       items: [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.image,
-              color: navBarController.currentIndex == 0
-                  ? Colors.red
-                  : Colors.grey),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.image),
           label: 'Cards',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite,
-              color: navBarController.currentIndex == 1
-                  ? Colors.red
-                  : Colors.grey),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.favorite),
           label: 'Favorites',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat,
-              color: navBarController.currentIndex == 2
-                  ? Colors.red
-                  : Colors.grey),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.chat),
           label: 'Chat',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person,
-              color: navBarController.currentIndex == 3
-                  ? Colors.red
-                  : Colors.grey),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.person),
           label: 'Profile',
         ),
       ],
+      selectedItemColor: Colors.red, // Color for the selected item
+      unselectedItemColor: Colors.grey, // Color for unselected items
+      type: BottomNavigationBarType.fixed, // Ensures the items are fixed
     );
   }
 }

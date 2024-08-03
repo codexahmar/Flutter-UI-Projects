@@ -1,4 +1,3 @@
-import 'package:dating_app/bottomNavBar/explore_people.dart';
 import 'package:dating_app/controller/navbarController.dart';
 import 'package:dating_app/home_screen.dart';
 
@@ -21,8 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      // home: HomeScreen(),
-      home: ExplorePeople(),
+      home: HomeScreen(),
     );
   }
 }

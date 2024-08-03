@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       spacing: 8.0,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       destination: SignUp(),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
                   GestureDetector(
                     onTap: () {},
                     child: RichText(
@@ -81,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
