@@ -8,6 +8,9 @@ import '../../home/presentation/home_screen.dart';
 import '../../markets/presentation/markets_screen.dart';
 import '../../portfolio/presentation/portfolio_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
+import 'widgets/drawer_tab.dart';
+import 'widgets/theme_mode_tile.dart';
+import 'widgets/utility_tile.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -156,25 +159,25 @@ class _AppShellState extends State<AppShell> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  _DrawerTab(
+                  DrawerTab(
                     label: 'Home',
                     icon: Icons.home_rounded,
                     selected: _selectedIndex == 0,
                     onTap: () => _selectFromDrawer(0),
                   ),
-                  _DrawerTab(
+                  DrawerTab(
                     label: 'Markets',
                     icon: Icons.query_stats_rounded,
                     selected: _selectedIndex == 1,
                     onTap: () => _selectFromDrawer(1),
                   ),
-                  _DrawerTab(
+                  DrawerTab(
                     label: 'Portfolio',
                     icon: Icons.account_balance_wallet_rounded,
                     selected: _selectedIndex == 2,
                     onTap: () => _selectFromDrawer(2),
                   ),
-                  _DrawerTab(
+                  DrawerTab(
                     label: 'Profile',
                     icon: Icons.person_rounded,
                     selected: _selectedIndex == 3,
@@ -189,17 +192,17 @@ class _AppShellState extends State<AppShell> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  _UtilityTile(
+                  UtilityTile(
                     icon: Icons.notifications_active_outlined,
                     label: 'Price Alerts',
                     onTap: () {},
                   ),
-                  _UtilityTile(
+                  UtilityTile(
                     icon: Icons.security_rounded,
                     label: 'Security',
                     onTap: () {},
                   ),
-                  _UtilityTile(
+                  UtilityTile(
                     icon: Icons.support_agent_rounded,
                     label: 'Support',
                     onTap: () {},
@@ -213,21 +216,21 @@ class _AppShellState extends State<AppShell> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  _ThemeModeTile(
+                  ThemeModeTile(
                     label: 'System',
                     icon: Icons.settings_suggest_rounded,
                     selected:
                         themeController.preference == AppThemePreference.system,
                     onTap: () => _selectTheme(AppThemePreference.system),
                   ),
-                  _ThemeModeTile(
+                  ThemeModeTile(
                     label: 'Light',
                     icon: Icons.light_mode_rounded,
                     selected:
                         themeController.preference == AppThemePreference.light,
                     onTap: () => _selectTheme(AppThemePreference.light),
                   ),
-                  _ThemeModeTile(
+                  ThemeModeTile(
                     label: 'Dark',
                     icon: Icons.dark_mode_rounded,
                     selected:
@@ -344,181 +347,6 @@ class ShellScaffold extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _DrawerTab extends StatelessWidget {
-  const _DrawerTab({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              color: selected
-                  ? colorScheme.primary.withValues(alpha: 0.14)
-                  : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: selected
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: selected
-                        ? colorScheme.onSurface
-                        : colorScheme.onSurfaceVariant,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _UtilityTile extends StatelessWidget {
-  const _UtilityTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.24),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: colorScheme.onSurfaceVariant),
-              const SizedBox(width: AppSpacing.sm),
-              Text(label, style: Theme.of(context).textTheme.bodyMedium),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeModeTile extends StatelessWidget {
-  const _ThemeModeTile({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            color: selected
-                ? colorScheme.primary.withValues(alpha: 0.14)
-                : Colors.transparent,
-            border: Border.all(
-              color: colorScheme.outline.withValues(
-                alpha: selected ? 0.44 : 0.24,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: selected
-                    ? colorScheme.primary
-                    : colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-              if (selected)
-                Icon(
-                  Icons.check_circle_rounded,
-                  size: 18,
-                  color: colorScheme.primary,
-                ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
