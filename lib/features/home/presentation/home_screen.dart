@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/mock/crypto_assets_mock.dart';
 import '../../../models/crypto_asset.dart';
+import '../../../shared/widgets/crypto_icon_avatar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.onOpenMenu});
@@ -14,6 +15,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final assets = CryptoAssetsMock.portfolioAssets;
 
     return CustomScrollView(
       slivers: [
@@ -54,7 +56,10 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           sliver: SliverList.list(
             children: [
-              _BalanceCard(totalBalance: CryptoAssetsMock.totalBalance),
+              _BalanceCard(
+                totalBalance: CryptoAssetsMock.totalBalance,
+                assetsCount: assets.length,
+              ),
               const SizedBox(height: AppSpacing.md),
               const _QuickActionsSection(),
               const SizedBox(height: AppSpacing.lg),
@@ -68,11 +73,11 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.lg),
               _SectionHeader(
                 title: 'Top Holdings',
-                subtitle: '4 assets',
+                subtitle: '${assets.length} assets',
                 actionText: 'See all',
               ),
               const SizedBox(height: AppSpacing.sm),
-              const _AssetHoldingsList(),
+              _AssetHoldingsList(assets: assets),
               const SizedBox(height: AppSpacing.lg),
             ],
           ),
@@ -83,9 +88,10 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _BalanceCard extends StatelessWidget {
-  const _BalanceCard({required this.totalBalance});
+  const _BalanceCard({required this.totalBalance, required this.assetsCount});
 
   final double totalBalance;
+  final int assetsCount;
 
   @override
   Widget build(BuildContext context) {
@@ -98,14 +104,14 @@ class _BalanceCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1E3A8A), Color(0xFF1D4ED8), Color(0xFF1E293B)],
-          stops: [0.0, 0.55, 1.0],
+          colors: [Color(0xFF0F1C47), Color(0xFF163C94), Color(0xFF0F172A)],
+          stops: [0.0, 0.58, 1.0],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1D4ED8).withValues(alpha: 0.28),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
+            color: const Color(0xFF1D4ED8).withValues(alpha: 0.25),
+            blurRadius: 26,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -142,49 +148,29 @@ class _BalanceCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Atlas Debit',
+                    'Portfolio value',
                     style: textTheme.titleSmall?.copyWith(
                       color: Colors.white.withValues(alpha: 0.92),
                     ),
                   ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 18,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xxs,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      color: Colors.white.withValues(alpha: 0.14),
+                    ),
+                    child: Text(
+                      '$assetsCount assets',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
                       ),
-                      Transform.translate(
-                        offset: const Offset(-6, 0),
-                        child: Container(
-                          width: 18,
-                          height: 18,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.4),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Container(
-                width: 46,
-                height: 34,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.amber.shade200.withValues(alpha: 0.95),
-                      Colors.amber.shade600.withValues(alpha: 0.95),
-                    ],
-                  ),
-                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
@@ -196,12 +182,14 @@ class _BalanceCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                '•••• 7312    Valid thru 11/28',
+                '24h PnL  +\$1,184.33',
                 style: textTheme.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.84),
-                  letterSpacing: 1.1,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(height: AppSpacing.md),
+              Divider(color: Colors.white.withValues(alpha: 0.16), height: 1),
               const SizedBox(height: AppSpacing.md),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -210,17 +198,34 @@ class _BalanceCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Cardholder',
+                        'Invested',
                         style: textTheme.bodySmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.65),
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'AHMARYAR KHAN',
+                        '\$92.4K',
                         style: textTheme.titleSmall?.copyWith(
                           color: Colors.white,
-                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Unrealized',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.65),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '+\$8.9K',
+                        style: textTheme.titleSmall?.copyWith(
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -235,7 +240,7 @@ class _BalanceCard extends StatelessWidget {
                       color: AppColors.success.withValues(alpha: 0.16),
                     ),
                     child: Text(
-                      '+2.34%',
+                      '+9.6% ROI',
                       style: textTheme.labelMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -415,12 +420,15 @@ class _AnalyticsPreviewCard extends StatelessWidget {
 }
 
 class _AssetHoldingsList extends StatelessWidget {
-  const _AssetHoldingsList();
+  const _AssetHoldingsList({required this.assets});
+
+  final List<CryptoAsset> assets;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: CryptoAssetsMock.portfolioAssets
+      children: assets
+          .take(6)
           .map(
             (asset) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
@@ -452,21 +460,11 @@ class _AssetRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-              color: asset.color.withValues(alpha: 0.15),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              asset.symbol,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: asset.color,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+          CryptoIconAvatar(
+            symbol: asset.symbol,
+            brandColor: asset.color,
+            iconUrl: asset.iconUrl,
+            size: 44,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(

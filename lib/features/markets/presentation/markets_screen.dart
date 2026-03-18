@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/mock/crypto_assets_mock.dart';
+import '../../../shared/widgets/crypto_icon_avatar.dart';
 
 class MarketsScreen extends StatelessWidget {
   const MarketsScreen({super.key});
@@ -28,9 +29,10 @@ class MarketsScreen extends StatelessWidget {
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.xs,
               ),
-              leading: CircleAvatar(
-                backgroundColor: asset.color.withValues(alpha: 0.15),
-                child: Text(asset.symbol.substring(0, 1)),
+              leading: CryptoIconAvatar(
+                symbol: asset.symbol,
+                brandColor: asset.color,
+                iconUrl: asset.iconUrl,
               ),
               title: Text(asset.name),
               subtitle: Text(asset.symbol),

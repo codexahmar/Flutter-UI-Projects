@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/mock/crypto_assets_mock.dart';
+import '../../../shared/widgets/crypto_icon_avatar.dart';
 
 class PortfolioScreen extends StatelessWidget {
   const PortfolioScreen({super.key});
@@ -27,6 +28,11 @@ class PortfolioScreen extends StatelessWidget {
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.xs,
+              ),
+              leading: CryptoIconAvatar(
+                symbol: asset.symbol,
+                brandColor: asset.color,
+                iconUrl: asset.iconUrl,
               ),
               title: Text(asset.name),
               subtitle: Text('${asset.holdings} ${asset.symbol}'),

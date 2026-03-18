@@ -7,6 +7,7 @@ class CryptoAsset {
   final double change;
   final double holdings;
   final Color color;
+  final String? iconUrl;
 
   CryptoAsset({
     required this.name,
@@ -15,5 +16,6 @@ class CryptoAsset {
     required this.change,
     required this.holdings,
     required this.color,
+    this.iconUrl,
   });
 }
