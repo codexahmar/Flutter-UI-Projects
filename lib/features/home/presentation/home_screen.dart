@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen>
                             Text('Welcome back', style: textTheme.bodySmall),
                             const SizedBox(height: 2),
                             Text(
-                              'Atlas Dashboard',
+                              'CryptoVista Dashboard',
                               style: textTheme.titleLarge,
                             ),
                           ],

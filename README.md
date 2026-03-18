@@ -1,6 +1,6 @@
-# Atlas Crypto Portfolio
+# CrpytoVista
 
-Atlas Crypto Portfolio is a Flutter crypto-wallet showcase app focused on production-style UI architecture, responsive layouts, and polished micro-interactions.
+CrpytoVista is a Flutter crypto-wallet showcase app focused on production-style UI architecture, responsive layouts, and polished micro-interactions.
 
 ## Highlights
 
