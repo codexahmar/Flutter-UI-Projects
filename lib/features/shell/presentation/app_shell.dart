@@ -112,40 +112,18 @@ class _AppShellState extends State<AppShell> {
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Ahmaryar Khan',
-                                style: textTheme.titleSmall,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Ahmaryar Khan', style: textTheme.titleSmall),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Portfolio  ${_selectedIndex == 0 ? 'Overview' : 'Active'}',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Portfolio  ${_selectedIndex == 0 ? 'Overview' : 'Active'}',
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.xs,
-                            vertical: AppSpacing.xxs,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
-                            color: Colors.green.withValues(alpha: 0.16),
-                          ),
-                          child: Text(
-                            'Live',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w700,
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),

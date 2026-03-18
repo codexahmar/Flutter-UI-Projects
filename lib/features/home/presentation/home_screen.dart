@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   child: Row(
                     children: [
-                      IconButton.filledTonal(
+                      IconButton.outlined(
                         onPressed: widget.onOpenMenu,
                         icon: const Icon(Icons.menu_rounded),
                       ),
