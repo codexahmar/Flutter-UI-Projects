@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/animated_entrance.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/services/mock_crypto_data_service.dart';
-import '../../../shared/widgets/crypto_icon_avatar.dart';
+import '../../../shared/widgets/crypto_asset_tile.dart';
 
 class MarketsScreen extends StatelessWidget {
   const MarketsScreen({super.key});
@@ -14,44 +15,36 @@ class MarketsScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        Text('Markets', style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          'Track top daily movers and current prices.',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        ...movers.map(
-          (asset) => Card(
-            margin: const EdgeInsets.only(bottom: AppSpacing.xs),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.xs,
-              ),
-              leading: CryptoIconAvatar(
-                symbol: asset.symbol,
-                brandColor: asset.color,
-                iconUrl: asset.iconUrl,
-              ),
-              title: Text(asset.name),
-              subtitle: Text(asset.symbol),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('\$${asset.price.toStringAsFixed(2)}'),
-                  Text(
-                    '${asset.change >= 0 ? '+' : ''}${asset.change.toStringAsFixed(1)}%',
-                    style: TextStyle(
-                      color: asset.change >= 0 ? Colors.green : Colors.red,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        AnimatedEntrance(
+          child: Text(
+            'Markets',
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
+        const SizedBox(height: AppSpacing.xs),
+        AnimatedEntrance(
+          delay: const Duration(milliseconds: 70),
+          child: Text(
+            'Track top daily movers and current prices.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        ...movers.take(10).toList().asMap().entries.map((entry) {
+          final index = entry.key;
+          final asset = entry.value;
+          return AnimatedEntrance(
+            delay: Duration(milliseconds: 110 + (index * 35)),
+            child: CryptoAssetTile(
+              asset: asset,
+              subtitle: asset.symbol,
+              primaryValue: '\$${asset.price.toStringAsFixed(2)}',
+              secondaryValue:
+                  '${asset.change >= 0 ? '+' : ''}${asset.change.toStringAsFixed(1)}%',
+              secondaryColor: asset.change >= 0 ? Colors.green : Colors.red,
+            ),
+          );
+        }),
       ],
     );
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kf_drawer/kf_drawer.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   final ValueNotifier<int> _selectedTab = ValueNotifier<int>(0);
+  final ValueNotifier<int> _homeReplayToken = ValueNotifier<int>(0);
   late final KFDrawerController _drawerController;
   int _selectedIndex = 0;
 
@@ -30,10 +32,14 @@ class _AppShellState extends State<AppShell> {
     _drawerController = KFDrawerController(
       initialPage: ShellScaffold(
         selectedTab: _selectedTab,
+        homeReplayToken: _homeReplayToken,
         onOpenMenu: _toggleDrawer,
         onTabChanged: (index) {
           if (!mounted) {
             return;
+          }
+          if (_selectedIndex != 0 && index == 0) {
+            _homeReplayToken.value = _homeReplayToken.value + 1;
           }
           setState(() => _selectedIndex = index);
         },
@@ -44,6 +50,7 @@ class _AppShellState extends State<AppShell> {
   @override
   void dispose() {
     _selectedTab.dispose();
+    _homeReplayToken.dispose();
     super.dispose();
   }
 
@@ -260,6 +267,9 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _selectFromDrawer(int index) {
+    if (_selectedIndex != 0 && index == 0) {
+      _homeReplayToken.value = _homeReplayToken.value + 1;
+    }
     _selectedTab.value = index;
     setState(() => _selectedIndex = index);
     _drawerController.close?.call();
@@ -278,29 +288,48 @@ class ShellScaffold extends StatelessWidget {
   const ShellScaffold({
     super.key,
     required this.selectedTab,
+    required this.homeReplayToken,
     required this.onOpenMenu,
     required this.onTabChanged,
   });
 
   final ValueNotifier<int> selectedTab;
+  final ValueNotifier<int> homeReplayToken;
   final VoidCallback onOpenMenu;
   final ValueChanged<int> onTabChanged;
 
   @override
   Widget build(BuildContext context) {
-    final pages = <Widget>[
-      HomeScreen(onOpenMenu: onOpenMenu),
-      const MarketsScreen(),
-      const PortfolioScreen(),
-      const ProfileScreen(),
-    ];
+    return ValueListenableBuilder2<int, int>(
+      first: selectedTab,
+      second: homeReplayToken,
+      builder: (context, selectedIndex, replayToken, _) {
+        final page = _buildPage(selectedIndex, replayToken);
 
-    return ValueListenableBuilder<int>(
-      valueListenable: selectedTab,
-      builder: (context, selectedIndex, _) {
         return Scaffold(
           body: SafeArea(
-            child: IndexedStack(index: selectedIndex, children: pages),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 420),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                final slideAnimation = Tween<Offset>(
+                  begin: const Offset(0.06, 0),
+                  end: Offset.zero,
+                ).animate(animation);
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: slideAnimation,
+                    child: child,
+                  ),
+                );
+              },
+              child: KeyedSubtree(
+                key: ValueKey('screen-$selectedIndex-$replayToken'),
+                child: page,
+              ),
+            ),
           ),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -345,6 +374,51 @@ class ShellScaffold extends StatelessWidget {
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPage(int selectedIndex, int replayToken) {
+    switch (selectedIndex) {
+      case 0:
+        return HomeScreen(
+          key: ValueKey('home-$replayToken'),
+          onOpenMenu: onOpenMenu,
+        );
+      case 1:
+        return const MarketsScreen();
+      case 2:
+        return const PortfolioScreen();
+      case 3:
+      default:
+        return const ProfileScreen();
+    }
+  }
+}
+
+class ValueListenableBuilder2<A, B> extends StatelessWidget {
+  const ValueListenableBuilder2({
+    super.key,
+    required this.first,
+    required this.second,
+    required this.builder,
+  });
+
+  final ValueListenable<A> first;
+  final ValueListenable<B> second;
+  final Widget Function(BuildContext, A, B, Widget?) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<A>(
+      valueListenable: first,
+      builder: (context, firstValue, child) {
+        return ValueListenableBuilder<B>(
+          valueListenable: second,
+          builder: (context, secondValue, _) {
+            return builder(context, firstValue, secondValue, child);
+          },
         );
       },
     );
