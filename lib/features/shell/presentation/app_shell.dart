@@ -17,8 +17,7 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  final GlobalKey<_ShellScaffoldState> _shellKey =
-      GlobalKey<_ShellScaffoldState>();
+  final ValueNotifier<int> _selectedTab = ValueNotifier<int>(0);
   late final KFDrawerController _drawerController;
   int _selectedIndex = 0;
 
@@ -27,7 +26,8 @@ class _AppShellState extends State<AppShell> {
     super.initState();
     _drawerController = KFDrawerController(
       initialPage: ShellScaffold(
-        key: _shellKey,
+        selectedTab: _selectedTab,
+        onOpenMenu: _toggleDrawer,
         onTabChanged: (index) {
           if (!mounted) {
             return;
@@ -36,6 +36,12 @@ class _AppShellState extends State<AppShell> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _selectedTab.dispose();
+    super.dispose();
   }
 
   @override
@@ -251,91 +257,94 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _selectFromDrawer(int index) {
-    _shellKey.currentState?.selectTab(index);
+    _selectedTab.value = index;
     setState(() => _selectedIndex = index);
-    KFDrawer.of(context)?.toggle();
+    _drawerController.close?.call();
   }
 
   void _selectTheme(AppThemePreference preference) {
     context.read<AppThemeController>().setPreference(preference);
   }
+
+  void _toggleDrawer() {
+    _drawerController.toggle?.call();
+  }
 }
 
-class ShellScaffold extends StatefulWidget {
-  const ShellScaffold({super.key, required this.onTabChanged});
+class ShellScaffold extends StatelessWidget {
+  const ShellScaffold({
+    super.key,
+    required this.selectedTab,
+    required this.onOpenMenu,
+    required this.onTabChanged,
+  });
 
+  final ValueNotifier<int> selectedTab;
+  final VoidCallback onOpenMenu;
   final ValueChanged<int> onTabChanged;
 
   @override
-  State<ShellScaffold> createState() => _ShellScaffoldState();
-}
-
-class _ShellScaffoldState extends State<ShellScaffold> {
-  int _selectedIndex = 0;
-
-  void selectTab(int index) {
-    if (_selectedIndex == index) {
-      return;
-    }
-    setState(() => _selectedIndex = index);
-    widget.onTabChanged(index);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final pages = [
-      HomeScreen(onOpenMenu: _toggleDrawer),
+    final pages = <Widget>[
+      HomeScreen(onOpenMenu: onOpenMenu),
       const MarketsScreen(),
       const PortfolioScreen(),
       const ProfileScreen(),
     ];
 
-    return Scaffold(
-      body: SafeArea(
-        child: IndexedStack(index: _selectedIndex, children: pages),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md,
-          AppSpacing.xs,
-          AppSpacing.md,
-          AppSpacing.md,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          child: NavigationBar(
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: selectTab,
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.candlestick_chart_outlined),
-                selectedIcon: Icon(Icons.candlestick_chart_rounded),
-                label: 'Markets',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.account_balance_wallet_outlined),
-                selectedIcon: Icon(Icons.account_balance_wallet_rounded),
-                label: 'Portfolio',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.person_outline_rounded),
-                selectedIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
-              ),
-            ],
+    return ValueListenableBuilder<int>(
+      valueListenable: selectedTab,
+      builder: (context, selectedIndex, _) {
+        return Scaffold(
+          body: SafeArea(
+            child: IndexedStack(index: selectedIndex, children: pages),
           ),
-        ),
-      ),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.xs,
+              AppSpacing.md,
+              AppSpacing.md,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              child: NavigationBar(
+                selectedIndex: selectedIndex,
+                onDestinationSelected: (index) {
+                  if (selectedTab.value == index) {
+                    return;
+                  }
+                  selectedTab.value = index;
+                  onTabChanged(index);
+                },
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home_rounded),
+                    label: 'Home',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.candlestick_chart_outlined),
+                    selectedIcon: Icon(Icons.candlestick_chart_rounded),
+                    label: 'Markets',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.account_balance_wallet_outlined),
+                    selectedIcon: Icon(Icons.account_balance_wallet_rounded),
+                    label: 'Portfolio',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.person_outline_rounded),
+                    selectedIcon: Icon(Icons.person_rounded),
+                    label: 'Profile',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
-  }
-
-  void _toggleDrawer() {
-    KFDrawer.of(context)?.toggle();
   }
 }
 

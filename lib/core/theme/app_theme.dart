@@ -42,6 +42,21 @@ class AppTheme {
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
       ),
+      listTileTheme: ListTileThemeData(
+        iconColor: AppColors.slate300,
+        titleTextStyle: TextStyle(
+          fontFamily: GoogleFonts.inter().fontFamily,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.white,
+        ),
+        subtitleTextStyle: TextStyle(
+          fontFamily: GoogleFonts.inter().fontFamily,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: AppColors.slate300,
+        ),
+      ),
       cardTheme: CardThemeData(
         color: AppColors.slate900,
         elevation: 0,
@@ -109,12 +124,14 @@ class AppTheme {
       ),
       listTileTheme: ListTileThemeData(
         iconColor: AppColors.slate500,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: TextStyle(
+          fontFamily: GoogleFonts.inter().fontFamily,
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColors.slate900,
         ),
-        subtitleTextStyle: GoogleFonts.inter(
+        subtitleTextStyle: TextStyle(
+          fontFamily: GoogleFonts.inter().fontFamily,
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.slate500,
