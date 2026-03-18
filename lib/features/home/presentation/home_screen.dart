@@ -18,18 +18,24 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  bool _animateIn = false;
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _staggerController;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() => _animateIn = true);
-    });
+    _staggerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2300),
+    );
+    _staggerController.forward();
+  }
+
+  @override
+  void dispose() {
+    _staggerController.dispose();
+    super.dispose();
   }
 
   @override
@@ -83,8 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
           sliver: SliverList.list(
             children: [
               _AnimatedSection(
-                delayMs: 0,
-                animateIn: _animateIn,
+                progress: _staggerController,
+                start: 0.00,
+                end: 0.30,
                 child: _WalletSummaryCard(
                   totalBalance: totalBalance,
                   invested: invested,
@@ -96,14 +103,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: AppSpacing.md),
               _AnimatedSection(
-                delayMs: 80,
-                animateIn: _animateIn,
+                progress: _staggerController,
+                start: 0.18,
+                end: 0.48,
                 child: const _QuickActionsSection(),
               ),
               const SizedBox(height: AppSpacing.lg),
               _AnimatedSection(
-                delayMs: 160,
-                animateIn: _animateIn,
+                progress: _staggerController,
+                start: 0.34,
+                end: 0.60,
                 child: const _SectionHeader(
                   title: 'Analytics',
                   subtitle: 'Clear portfolio values (7D)',
@@ -112,8 +121,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               _AnimatedSection(
-                delayMs: 220,
-                animateIn: _animateIn,
+                progress: _staggerController,
+                start: 0.50,
+                end: 0.80,
                 child: _AnalyticsPreviewCard(
                   points: analyticsSeries,
                   roi: roi,
@@ -122,8 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
               _AnimatedSection(
-                delayMs: 300,
-                animateIn: _animateIn,
+                progress: _staggerController,
+                start: 0.70,
+                end: 0.90,
                 child: _SectionHeader(
                   title: 'Top Holdings',
                   subtitle: '${assets.length} assets',
@@ -132,8 +143,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               _AnimatedSection(
-                delayMs: 360,
-                animateIn: _animateIn,
+                progress: _staggerController,
+                start: 0.82,
+                end: 1.00,
                 child: _AssetHoldingsList(assets: assets),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -379,29 +391,51 @@ class _GlowOrb extends StatelessWidget {
 
 class _AnimatedSection extends StatelessWidget {
   const _AnimatedSection({
-    required this.delayMs,
-    required this.animateIn,
+    required this.progress,
+    required this.start,
+    required this.end,
     required this.child,
   });
 
-  final int delayMs;
-  final bool animateIn;
+  final Animation<double> progress;
+  final double start;
+  final double end;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final duration = Duration(milliseconds: 380 + delayMs);
+    final fadeCurve = CurvedAnimation(
+      parent: progress,
+      curve: Interval(start, end, curve: Curves.easeOutQuart),
+    );
+    final dropCurve = CurvedAnimation(
+      parent: progress,
+      curve: Interval(start, end, curve: Curves.easeOutBack),
+    );
 
-    return AnimatedOpacity(
-      opacity: animateIn ? 1 : 0,
-      duration: duration,
-      curve: Curves.easeOutCubic,
-      child: AnimatedSlide(
-        offset: animateIn ? Offset.zero : const Offset(0, 0.08),
-        duration: duration,
-        curve: Curves.easeOutCubic,
-        child: child,
-      ),
+    return AnimatedBuilder(
+      animation: progress,
+      child: child,
+      builder: (context, animatedChild) {
+        final fadeT = fadeCurve.value;
+        final dropT = dropCurve.value;
+        const dropDistance = -78.0;
+        const initialScale = 0.93;
+        final scale = initialScale + (1 - initialScale) * fadeT;
+        final dy = dropDistance * (1 - dropT);
+
+        return Opacity(
+          opacity: fadeT,
+          child: Transform.translate(
+            offset: Offset(0, dy),
+            child: Transform.scale(
+              scale: scale,
+              alignment: Alignment.topCenter,
+              child: animatedChild,
+            ),
+          ),
+        );
+      },
     );
   }
 }
