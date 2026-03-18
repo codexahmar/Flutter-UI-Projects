@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_spacing.dart';
-import '../../../data/mock/crypto_assets_mock.dart';
+import '../../../shared/services/mock_crypto_data_service.dart';
 import '../../../shared/widgets/crypto_icon_avatar.dart';
 
 class PortfolioScreen extends StatelessWidget {
@@ -9,7 +9,7 @@ class PortfolioScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assets = CryptoAssetsMock.portfolioAssets;
+    final assets = const MockCryptoDataService().portfolioAssets;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),

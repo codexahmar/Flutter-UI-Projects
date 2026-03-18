@@ -1,15 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CryptoAsset {
-  final String name;
-  final String symbol;
-  final double price;
-  final double change;
-  final double holdings;
-  final Color color;
-  final String? iconUrl;
-
-  CryptoAsset({
+  const CryptoAsset({
     required this.name,
     required this.symbol,
     required this.price,
@@ -18,4 +10,12 @@ class CryptoAsset {
     required this.color,
     this.iconUrl,
   });
+
+  final String name;
+  final String symbol;
+  final double price;
+  final double change;
+  final double holdings;
+  final Color color;
+  final String? iconUrl;
 }
