@@ -87,6 +87,42 @@ class CryptoAssetsMock {
     );
   }
 
+  static double get investedCapital {
+    return portfolioAssets.fold(0, (sum, asset) {
+      final currentValue = asset.price * asset.holdings;
+      final base = currentValue / (1 + asset.change / 100);
+      return sum + base;
+    });
+  }
+
+  static double get unrealizedPnl {
+    return totalBalance - investedCapital;
+  }
+
+  static double get roiPercent {
+    if (investedCapital == 0) {
+      return 0;
+    }
+    return (unrealizedPnl / investedCapital) * 100;
+  }
+
+  static double get dailyPnl {
+    return totalBalance * 0.0124;
+  }
+
+  static List<double> get analyticsSeriesK {
+    final base = investedCapital / 1000;
+    return [
+      base * 0.97,
+      base * 0.985,
+      base * 0.98,
+      base * 1.012,
+      base * 1.006,
+      base * 1.026,
+      totalBalance / 1000,
+    ];
+  }
+
   static List<CryptoAsset> get marketMovers {
     final items = [...portfolioAssets];
     items.sort((a, b) => b.change.compareTo(a.change));

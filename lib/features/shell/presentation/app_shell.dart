@@ -68,18 +68,70 @@ class _AppShellState extends State<AppShell> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundColor: colorScheme.primary.withValues(alpha: 0.2),
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: colorScheme.primary,
-                      size: 28,
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      color: colorScheme.surfaceContainerHighest.withValues(
+                        alpha: 0.35,
+                      ),
+                      border: Border.all(
+                        color: colorScheme.outline.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundColor: colorScheme.primary.withValues(
+                            alpha: 0.2,
+                          ),
+                          child: Icon(
+                            Icons.person_rounded,
+                            color: colorScheme.primary,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Ahmaryar Khan',
+                                style: textTheme.titleSmall,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Portfolio  ${_selectedIndex == 0 ? 'Overview' : 'Active'}',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.xs,
+                            vertical: AppSpacing.xxs,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(999),
+                            color: Colors.green.withValues(alpha: 0.16),
+                          ),
+                          child: Text(
+                            'Live',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text('Ahmaryar Khan', style: textTheme.titleMedium),
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     'Pro investor plan',
                     style: textTheme.bodySmall?.copyWith(
@@ -87,6 +139,14 @@ class _AppShellState extends State<AppShell> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Main',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
                   _DrawerTab(
                     label: 'Home',
                     icon: Icons.home_rounded,
@@ -110,6 +170,30 @@ class _AppShellState extends State<AppShell> {
                     icon: Icons.person_rounded,
                     selected: _selectedIndex == 3,
                     onTap: () => _selectFromDrawer(3),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Utilities',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  _UtilityTile(
+                    icon: Icons.notifications_active_outlined,
+                    label: 'Price Alerts',
+                    onTap: () {},
+                  ),
+                  _UtilityTile(
+                    icon: Icons.security_rounded,
+                    label: 'Security',
+                    onTap: () {},
+                  ),
+                  _UtilityTile(
+                    icon: Icons.support_agent_rounded,
+                    label: 'Support',
+                    onTap: () {},
                   ),
                 ],
               ),
@@ -274,6 +358,50 @@ class _DrawerTab extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _UtilityTile extends StatelessWidget {
+  const _UtilityTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(
+              color: colorScheme.outline.withValues(alpha: 0.24),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 18, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: AppSpacing.sm),
+              Text(label, style: Theme.of(context).textTheme.bodyMedium),
+            ],
           ),
         ),
       ),
