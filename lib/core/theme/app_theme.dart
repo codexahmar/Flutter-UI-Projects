@@ -100,6 +100,19 @@ class AppTheme {
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
       ),
+      listTileTheme: ListTileThemeData(
+        iconColor: AppColors.slate500,
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.slate900,
+        ),
+        subtitleTextStyle: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: AppColors.slate500,
+        ),
+      ),
       cardTheme: CardThemeData(
         color: AppColors.white,
         elevation: 0,
@@ -108,6 +121,15 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         indicatorColor: AppColors.brandBlue.withValues(alpha: 0.1),
         backgroundColor: AppColors.white,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontFamily: GoogleFonts.inter().fontFamily,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? AppColors.slate900 : AppColors.slate500,
+          );
+        }),
       ),
       dividerColor: AppColors.slate200,
     );

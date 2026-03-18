@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:kf_drawer/kf_drawer.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_theme_controller.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../markets/presentation/markets_screen.dart';
 import '../../portfolio/presentation/portfolio_screen.dart';
@@ -17,7 +19,7 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   final GlobalKey<_ShellScaffoldState> _shellKey =
       GlobalKey<_ShellScaffoldState>();
-  late KFDrawerController _drawerController;
+  late final KFDrawerController _drawerController;
   int _selectedIndex = 0;
 
   @override
@@ -40,6 +42,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final themeController = context.watch<AppThemeController>();
 
     return Scaffold(
       body: KFDrawer(
@@ -195,6 +198,36 @@ class _AppShellState extends State<AppShell> {
                     label: 'Support',
                     onTap: () {},
                   ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Appearance',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  _ThemeModeTile(
+                    label: 'System',
+                    icon: Icons.settings_suggest_rounded,
+                    selected:
+                        themeController.preference == AppThemePreference.system,
+                    onTap: () => _selectTheme(AppThemePreference.system),
+                  ),
+                  _ThemeModeTile(
+                    label: 'Light',
+                    icon: Icons.light_mode_rounded,
+                    selected:
+                        themeController.preference == AppThemePreference.light,
+                    onTap: () => _selectTheme(AppThemePreference.light),
+                  ),
+                  _ThemeModeTile(
+                    label: 'Dark',
+                    icon: Icons.dark_mode_rounded,
+                    selected:
+                        themeController.preference == AppThemePreference.dark,
+                    onTap: () => _selectTheme(AppThemePreference.dark),
+                  ),
                 ],
               ),
             ),
@@ -221,6 +254,10 @@ class _AppShellState extends State<AppShell> {
     _shellKey.currentState?.selectTab(index);
     setState(() => _selectedIndex = index);
     KFDrawer.of(context)?.toggle();
+  }
+
+  void _selectTheme(AppThemePreference preference) {
+    context.read<AppThemeController>().setPreference(preference);
   }
 }
 
@@ -401,6 +438,74 @@ class _UtilityTile extends StatelessWidget {
               Icon(icon, size: 18, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
               Text(label, style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeModeTile extends StatelessWidget {
+  const _ThemeModeTile({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            color: selected
+                ? colorScheme.primary.withValues(alpha: 0.14)
+                : Colors.transparent,
+            border: Border.all(
+              color: colorScheme.outline.withValues(
+                alpha: selected ? 0.44 : 0.24,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: selected
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+              if (selected)
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
             ],
           ),
         ),
