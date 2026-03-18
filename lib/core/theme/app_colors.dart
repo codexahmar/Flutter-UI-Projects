@@ -14,6 +14,7 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF);
 
   static const Color brandBlue = Color(0xFF2F6BFF);
+  static const Color walletBlue = Color(0xFF153A8A);
   static const Color accentTeal = Color(0xFF0EA5A3);
   static const Color success = Color(0xFF16A34A);
   static const Color warning = Color(0xFFF59E0B);

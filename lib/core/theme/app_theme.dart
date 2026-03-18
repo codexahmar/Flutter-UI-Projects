@@ -50,6 +50,13 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         indicatorColor: AppColors.brandBlue.withValues(alpha: 0.16),
         backgroundColor: AppColors.slate900,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: isSelected ? AppColors.white : AppColors.slate500,
+            size: 22,
+          );
+        }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return TextStyle(
@@ -119,15 +126,22 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        indicatorColor: AppColors.brandBlue.withValues(alpha: 0.1),
+        indicatorColor: AppColors.walletBlue.withValues(alpha: 0.14),
         backgroundColor: AppColors.white,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: isSelected ? AppColors.walletBlue : AppColors.slate500,
+            size: 22,
+          );
+        }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return TextStyle(
             fontFamily: GoogleFonts.inter().fontFamily,
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? AppColors.slate900 : AppColors.slate500,
+            color: isSelected ? AppColors.walletBlue : AppColors.slate500,
           );
         }),
       ),
@@ -137,33 +151,40 @@ class AppTheme {
 
   static TextTheme _textTheme(TextTheme base, {required bool isDark}) {
     final bodyColor = isDark ? AppColors.slate300 : AppColors.slate500;
+    final headingColor = isDark ? AppColors.white : AppColors.slate900;
 
     return base.copyWith(
       headlineLarge: GoogleFonts.manrope(
         fontSize: 32,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.8,
+        color: headingColor,
       ),
       headlineMedium: GoogleFonts.manrope(
         fontSize: 28,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.6,
+        color: headingColor,
       ),
       headlineSmall: GoogleFonts.manrope(
         fontSize: 24,
         fontWeight: FontWeight.w700,
+        color: headingColor,
       ),
       titleLarge: GoogleFonts.manrope(
         fontSize: 20,
         fontWeight: FontWeight.w700,
+        color: headingColor,
       ),
       titleMedium: GoogleFonts.manrope(
         fontSize: 16,
         fontWeight: FontWeight.w600,
+        color: headingColor,
       ),
       titleSmall: GoogleFonts.manrope(
         fontSize: 14,
         fontWeight: FontWeight.w600,
+        color: headingColor,
       ),
       bodyLarge: GoogleFonts.inter(
         fontSize: 16,
