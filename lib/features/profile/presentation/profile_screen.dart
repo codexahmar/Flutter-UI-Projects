@@ -10,6 +10,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -36,19 +37,27 @@ class ProfileScreen extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  colorScheme.primary.withValues(alpha: 0.22),
-                  colorScheme.secondary.withValues(alpha: 0.18),
+                  isLight
+                      ? const Color(0xFFE7EEFF)
+                      : colorScheme.primary.withValues(alpha: 0.22),
+                  isLight
+                      ? const Color(0xFFDDF8F1)
+                      : colorScheme.secondary.withValues(alpha: 0.18),
                 ],
               ),
               border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.22),
+                color: isLight
+                    ? colorScheme.primary.withValues(alpha: 0.25)
+                    : colorScheme.outline.withValues(alpha: 0.22),
               ),
             ),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: colorScheme.primary.withValues(alpha: 0.18),
+                  backgroundColor: isLight
+                      ? colorScheme.primary.withValues(alpha: 0.14)
+                      : colorScheme.primary.withValues(alpha: 0.18),
                   child: Icon(
                     Icons.person_rounded,
                     color: colorScheme.primary,
@@ -75,13 +84,17 @@ class ProfileScreen extends StatelessWidget {
                           vertical: AppSpacing.xxs,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.14),
+                          color: isLight
+                              ? const Color(0xFFDCFCE7)
+                              : Colors.green.withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
                           'Verified Level 2',
                           style: textTheme.bodySmall?.copyWith(
-                            color: Colors.green,
+                            color: isLight
+                                ? const Color(0xFF166534)
+                                : Colors.green,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -194,17 +207,34 @@ class ProfileScreen extends StatelessWidget {
         AnimatedEntrance(
           delay: const Duration(milliseconds: 470),
           child: Card(
-            color: colorScheme.errorContainer.withValues(alpha: 0.55),
+            color: isLight
+                ? const Color(0xFFFFF4DA)
+                : colorScheme.errorContainer.withValues(alpha: 0.55),
             child: ListTile(
               leading: Icon(
                 Icons.warning_amber_rounded,
-                color: colorScheme.error,
+                color: isLight ? const Color(0xFFB45309) : colorScheme.error,
               ),
-              title: const Text('Backup Recovery Codes'),
-              subtitle: const Text('Last backup: 48 days ago'),
+              title: Text(
+                'Backup Recovery Codes',
+                style: textTheme.titleSmall?.copyWith(
+                  color: isLight ? const Color(0xFF7C2D12) : null,
+                ),
+              ),
+              subtitle: Text(
+                'Last backup: 48 days ago',
+                style: textTheme.bodySmall?.copyWith(
+                  color: isLight ? const Color(0xFF9A3412) : null,
+                ),
+              ),
               trailing: TextButton(
                 onPressed: () {},
-                child: const Text('Backup'),
+                child: Text(
+                  'Backup',
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFFB45309) : null,
+                  ),
+                ),
               ),
             ),
           ),

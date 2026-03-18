@@ -45,13 +45,13 @@ class AppTheme {
       listTileTheme: ListTileThemeData(
         iconColor: AppColors.slate300,
         titleTextStyle: TextStyle(
-          fontFamily: GoogleFonts.inter().fontFamily,
+          fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColors.white,
         ),
         subtitleTextStyle: TextStyle(
-          fontFamily: GoogleFonts.inter().fontFamily,
+          fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.slate300,
@@ -75,7 +75,7 @@ class AppTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return TextStyle(
-            fontFamily: GoogleFonts.inter().fontFamily,
+            fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             color: isSelected ? AppColors.white : AppColors.slate500,
@@ -125,13 +125,13 @@ class AppTheme {
       listTileTheme: ListTileThemeData(
         iconColor: AppColors.slate500,
         titleTextStyle: TextStyle(
-          fontFamily: GoogleFonts.inter().fontFamily,
+          fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColors.slate900,
         ),
         subtitleTextStyle: TextStyle(
-          fontFamily: GoogleFonts.inter().fontFamily,
+          fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.slate500,
@@ -155,7 +155,7 @@ class AppTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return TextStyle(
-            fontFamily: GoogleFonts.inter().fontFamily,
+            fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             color: isSelected ? AppColors.walletBlue : AppColors.slate500,
@@ -171,49 +171,49 @@ class AppTheme {
     final headingColor = isDark ? AppColors.white : AppColors.slate900;
 
     return base.copyWith(
-      headlineLarge: GoogleFonts.manrope(
+      headlineLarge: GoogleFonts.sora(
         fontSize: 32,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.8,
         color: headingColor,
       ),
-      headlineMedium: GoogleFonts.manrope(
+      headlineMedium: GoogleFonts.sora(
         fontSize: 28,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.6,
         color: headingColor,
       ),
-      headlineSmall: GoogleFonts.manrope(
+      headlineSmall: GoogleFonts.sora(
         fontSize: 24,
         fontWeight: FontWeight.w700,
         color: headingColor,
       ),
-      titleLarge: GoogleFonts.manrope(
+      titleLarge: GoogleFonts.sora(
         fontSize: 20,
         fontWeight: FontWeight.w700,
         color: headingColor,
       ),
-      titleMedium: GoogleFonts.manrope(
+      titleMedium: GoogleFonts.sora(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: headingColor,
       ),
-      titleSmall: GoogleFonts.manrope(
+      titleSmall: GoogleFonts.sora(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: headingColor,
       ),
-      bodyLarge: GoogleFonts.inter(
+      bodyLarge: GoogleFonts.spaceGrotesk(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: bodyColor,
       ),
-      bodyMedium: GoogleFonts.inter(
+      bodyMedium: GoogleFonts.spaceGrotesk(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: bodyColor,
       ),
-      bodySmall: GoogleFonts.inter(
+      bodySmall: GoogleFonts.spaceGrotesk(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: bodyColor,
