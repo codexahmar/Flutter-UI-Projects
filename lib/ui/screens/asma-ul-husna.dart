@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../provider/audio_provider.dart';
 import '../../model/asma-ul-husna.dart';
 
+// The primary accent color used throughout the screen for highlights and buttons
 const Color accentColor = Color(0xFF18D2D1);
 
 class AllahNames extends StatefulWidget {
@@ -23,9 +24,12 @@ class _AllahNamesState extends State<AllahNames> {
   @override
   void initState() {
     super.initState();
+    // Load the data from JSON when the screen initializes
     _loadNames();
   }
 
+  /// Reads the local JSON file containing the 99 Names of Allah,
+  /// parses it into a list of AllahName objects, and updates the UI state.
   Future<void> _loadNames() async {
     try {
       final String response = await rootBundle.loadString('assets/json/asma-ul-husna.json');
@@ -40,20 +44,26 @@ class _AllahNamesState extends State<AllahNames> {
     }
   }
 
+  /// Handles screen taps to control audio playback.
+  /// If audio isn't playing, it starts from a preset intro point (5.6s).
+  /// If already playing, it skips to the next name's audio start time.
   void _onScreenTapped(AudioProvider provider) {
     if (_names.isEmpty) return;
 
     if (provider.mode != PlayerMode.allahNames) {
+      // Start initial playback
       provider.playAllahNames(context, startSeconds: 5.6);
       return;
     }
 
+    // Seek to the next name based on current index
     int nextIndex = (_currentIndex + 1) % _names.length;
     provider.player.seek(Duration(milliseconds: (_names[nextIndex].startTime * 1000).toInt()));
   }
 
   @override
   Widget build(BuildContext context) {
+    // Listen to the AudioProvider to respond to audio state changes
     final audioProvider = context.watch<AudioProvider>();
 
     if (_isLoading) {
@@ -66,10 +76,12 @@ class _AllahNamesState extends State<AllahNames> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: StreamBuilder<Duration>(
+        // Listen to the current position of the audio player
         stream: audioProvider.player.positionStream,
         builder: (context, snapshot) {
           final position = snapshot.data ?? Duration.zero;
 
+          // Sync the current displayed name with the audio playback position
           if (audioProvider.mode == PlayerMode.allahNames) {
             double currentSecs = position.inMilliseconds / 1000.0;
             int foundIndex = 0;
@@ -87,6 +99,7 @@ class _AllahNamesState extends State<AllahNames> {
 
           final currentName = _names.isNotEmpty ? _names[_currentIndex] : null;
           final double firstNameStart = _names.isNotEmpty ? _names[0].startTime : 5.6;
+          // Check if we are currently playing the introductory part of the audio
           final bool isIntro = position.inSeconds < firstNameStart && audioProvider.mode == PlayerMode.allahNames;
 
           return GestureDetector(
@@ -106,6 +119,7 @@ class _AllahNamesState extends State<AllahNames> {
                 child: Column(
                   children: [
                     const Spacer(flex: 2),
+                    // Animated switcher for smooth transitions between names and intro text
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 600),
                       transitionBuilder: (Widget child, Animation<double> animation) {
@@ -194,6 +208,7 @@ class _AllahNamesState extends State<AllahNames> {
                               : const SizedBox.shrink(),
                     ),
                     const Spacer(flex: 3),
+                    // UI components for audio progress and player controls
                     Directionality(
                       textDirection: TextDirection.ltr,
                       child: _buildSlider(audioProvider),
@@ -224,6 +239,7 @@ class _AllahNamesState extends State<AllahNames> {
     );
   }
 
+  /// Builds the audio progress slider
   Widget _buildSlider(AudioProvider audioProvider) {
     return StreamBuilder<Duration>(
       stream: audioProvider.player.positionStream,
@@ -277,6 +293,7 @@ class _AllahNamesState extends State<AllahNames> {
     );
   }
 
+  /// Formats duration into MM:SS string
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -284,6 +301,7 @@ class _AllahNamesState extends State<AllahNames> {
     return "$minutes:$seconds";
   }
 
+  /// Builds playback control buttons (Reset, Previous, Play/Pause, Next)
   Widget _buildControls(AudioProvider audioProvider) {
     final isPlaying = audioProvider.isAllahNamesPlaying && audioProvider.player.playing;
 
@@ -292,6 +310,7 @@ class _AllahNamesState extends State<AllahNames> {
       children: [
         IconButton(
           onPressed: () {
+            // Replay from the beginning of names
             audioProvider.player.seek(const Duration(milliseconds: 5600));
           },
           tooltip: 'Reset',

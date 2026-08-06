@@ -12,25 +12,25 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _controller;
 
+  // Animations for the splash elements
   late Animation<double> islamOpacity;
   late Animation<Offset> islamSlide;
-
   late Animation<double> plusOpacity;
   late Animation<Offset> plusSlide;
-
   late Animation<double> lineOpacity;
-
   late Animation<double> subtitleOpacity;
 
   @override
   void initState() {
     super.initState();
 
+    // Set up the animation controller with a 2.2 second duration
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     );
 
+    // Staggered animations setup
     islamOpacity = Tween(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -61,11 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(
-          0.20,
-          0.60,
-          curve: Curves.elasticOut,
-        ),
+        curve: const Interval(0.20, 0.60, curve: Curves.elasticOut),
       ),
     );
 
@@ -83,11 +79,15 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
+    // Start the splash screen animations
     _controller.forward();
 
+    // Trigger navigation to the main screen
     _navigateToHome();
   }
 
+  /// Handles the navigation delay.
+  /// After 3 seconds, the app will automatically navigate to the AllahNames screen.
   void _navigateToHome() async {
     await Future.delayed(const Duration(seconds: 3));
     if (mounted) {
@@ -134,6 +134,7 @@ class _SplashScreenState extends State<SplashScreen>
         child: Stack(
           fit: StackFit.expand,
           children: [
+            // Splash background image
             Image.asset(
               "assets/images/splash_img.png",
               fit: BoxFit.cover,
