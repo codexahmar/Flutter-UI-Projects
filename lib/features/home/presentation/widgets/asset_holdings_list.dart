@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/models/crypto_asset.dart';
@@ -35,56 +34,97 @@ class _AssetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final value = asset.price * asset.holdings;
     final isGain = asset.change >= 0;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${asset.name} (${asset.symbol}) selected'),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(AppRadius.md),
-        color: colorScheme.surface,
-        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        children: [
-          CryptoIconAvatar(
-            symbol: asset.symbol,
-            brandColor: asset.color,
-            iconUrl: asset.iconUrl,
-            size: 44,
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(asset.name, style: Theme.of(context).textTheme.titleSmall),
-                const SizedBox(height: 2),
-                Text(
-                  '${asset.holdings.toStringAsFixed(2)} ${asset.symbol}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            color: colorScheme.surface,
+            border: Border.all(
+              color: colorScheme.outline.withValues(alpha: isDark ? 0.3 : 0.6),
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Row(
             children: [
-              Text(
-                formatCompactCurrency(value),
-                style: Theme.of(context).textTheme.titleSmall,
+              CryptoIconAvatar(
+                symbol: asset.symbol,
+                brandColor: asset.color,
+                iconUrl: asset.iconUrl,
+                size: 42,
               ),
-              const SizedBox(height: 2),
-              Text(
-                '${isGain ? '+' : ''}${asset.change.toStringAsFixed(1)}%',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: isGain ? AppColors.success : AppColors.danger,
-                  fontWeight: FontWeight.w600,
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      asset.name,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${asset.holdings.toStringAsFixed(asset.holdings < 10 ? 4 : 2)} ${asset.symbol} • ${formatCompactCurrency(asset.price)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    formatCurrency(value),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isGain
+                          ? const Color(0xFF10B981).withValues(alpha: 0.14)
+                          : const Color(0xFFEF4444).withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '${isGain ? '+' : ''}${asset.change.toStringAsFixed(2)}%',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: isGain
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

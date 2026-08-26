@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -13,6 +14,11 @@ class WalletSummaryCard extends StatelessWidget {
     required this.roi,
     required this.dailyPnl,
     required this.assetsCount,
+    this.btcEquivalent = 0.0,
+    this.walletAddress = '0x71C8...49B2',
+    this.fullWalletAddress = '0x71C824a68C3202C26e3860F5f7FE0F4bCd3149B2',
+    this.isBalanceHidden = false,
+    this.onToggleVisibility,
   });
 
   final double totalBalance;
@@ -21,152 +27,390 @@ class WalletSummaryCard extends StatelessWidget {
   final double roi;
   final double dailyPnl;
   final int assetsCount;
+  final double btcEquivalent;
+  final String walletAddress;
+  final String fullWalletAddress;
+  final bool isBalanceHidden;
+  final VoidCallback? onToggleVisibility;
+
+  void _copyAddress(BuildContext context) {
+    Clipboard.setData(ClipboardData(text: fullWalletAddress));
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: AppSpacing.xs),
+            const Text(
+              'Wallet address copied to clipboard',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          side: BorderSide(
+            color: AppColors.brandBlue.withValues(alpha: 0.4),
+            width: 1,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dailyPnlPercent = totalBalance > 0
+        ? (dailyPnl / (totalBalance - dailyPnl)) * 100
+        : 0.0;
+    final isGain = dailyPnl >= 0;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0B1539), Color(0xFF153A8A), Color(0xFF0A122D)],
-          stops: [0.0, 0.58, 1.0],
+          colors: isDark
+              ? const [
+                  Color(0xFF0F172A),
+                  Color(0xFF162038),
+                  Color(0xFF0D1527),
+                ]
+              : const [
+                  Color(0xFF1E293B),
+                  Color(0xFF0F172A),
+                  Color(0xFF090E17),
+                ],
+          stops: const [0.0, 0.55, 1.0],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1D4ED8).withValues(alpha: 0.22),
-            blurRadius: 30,
-            offset: const Offset(0, 16),
+            color: const Color(0xFF0F172A).withValues(alpha: isDark ? 0.6 : 0.25),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
+          BoxShadow(
+            color: AppColors.brandBlue.withValues(alpha: 0.15),
+            blurRadius: 36,
+            spreadRadius: -4,
+            offset: const Offset(0, 10),
           ),
         ],
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.12),
+          width: 1.2,
+        ),
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -70,
-            right: -50,
-            child: _GlowOrb(
-              size: 180,
-              color: Colors.white.withValues(alpha: 0.07),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: Stack(
+          children: [
+            // Subtle Cyber Grid & Light Shimmer Lines (Crypto Theme)
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _CryptoCardBackgroundPainter(),
+              ),
             ),
-          ),
-          Positioned(
-            bottom: -80,
-            left: -40,
-            child: _GlowOrb(
-              size: 190,
-              color: const Color(0xFF60A5FA).withValues(alpha: 0.14),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xxs,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(999),
-                      color: Colors.white.withValues(alpha: 0.14),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.account_balance_wallet_rounded,
-                          size: 14,
-                          color: Colors.white,
+                  // Top Row: Network Pill + Address Copy + Privacy Toggle
+                  Row(
+                    children: [
+                      // Network Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: 5,
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Wallet',
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.14),
+                          border: Border.all(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF10B981),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color(0xFF10B981),
+                                    blurRadius: 6,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Ethereum Mainnet',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: const Color(0xFF34D399),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      // Wallet Address Pill with Copy
+                      InkWell(
+                        onTap: () => _copyAddress(context),
+                        borderRadius: BorderRadius.circular(999),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(999),
+                            color: Colors.white.withValues(alpha: 0.08),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                walletAddress,
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.copy_rounded,
+                                size: 12,
+                                color: Colors.white.withValues(alpha: 0.7),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      // Privacy Toggle Button
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: onToggleVisibility,
+                          borderRadius: BorderRadius.circular(999),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.08),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.12),
+                              ),
+                            ),
+                            child: Icon(
+                              isBalanceHidden
+                                  ? Icons.visibility_off_rounded
+                                  : Icons.visibility_rounded,
+                              size: 14,
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Balance Label & Holdings count
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Total Portfolio Balance',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.65),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '$assetsCount Assets',
                           style: textTheme.bodySmall?.copyWith(
-                            color: Colors.white,
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Large Balance Display
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    child: Text(
+                      isBalanceHidden
+                          ? '\$ •••••••••'
+                          : formatCurrency(totalBalance),
+                      key: ValueKey<bool>(isBalanceHidden),
+                      style: textTheme.headlineLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: isBalanceHidden ? 2 : -0.8,
+                        fontSize: 32,
+                      ),
                     ),
                   ),
-                  const Spacer(),
-                  Text(
-                    '$assetsCount assets',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.88),
+                  const SizedBox(height: 4),
+
+                  // Crypto Equivalent + 24h P&L Pill
+                  Row(
+                    children: [
+                      // BTC Equivalent
+                      Text(
+                        isBalanceHidden
+                            ? '≈ •••••• BTC'
+                            : '≈ ${btcEquivalent.toStringAsFixed(4)} BTC',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: const Color(0xFFF7931A).withValues(alpha: 0.95),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      // 24h Change Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isGain
+                              ? const Color(0xFF10B981).withValues(alpha: 0.16)
+                              : const Color(0xFFEF4444).withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isGain
+                                ? const Color(0xFF10B981).withValues(alpha: 0.35)
+                                : const Color(0xFFEF4444).withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isGain
+                                  ? Icons.arrow_drop_up_rounded
+                                  : Icons.arrow_drop_down_rounded,
+                              size: 16,
+                              color: isGain
+                                  ? const Color(0xFF34D399)
+                                  : const Color(0xFFF87171),
+                            ),
+                            Text(
+                              '${isGain ? '+' : ''}${dailyPnlPercent.toStringAsFixed(2)}% (${isGain ? '+' : ''}${formatCompactCurrency(dailyPnl)})',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: isGain
+                                    ? const Color(0xFF34D399)
+                                    : const Color(0xFFF87171),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: AppSpacing.lg),
+                  Container(
+                    height: 1,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: 0.02),
+                          Colors.white.withValues(alpha: 0.14),
+                          Colors.white.withValues(alpha: 0.02),
+                        ],
+                      ),
                     ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Bottom 3 Glassmorphism Metric Tiles
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MetricTile(
+                          label: 'Invested',
+                          value: isBalanceHidden
+                              ? '\$ ••••'
+                              : formatCompactCurrency(invested),
+                          icon: Icons.account_balance_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: _MetricTile(
+                          label: 'Unrealized P&L',
+                          value: isBalanceHidden
+                              ? '••••'
+                              : '${unrealized >= 0 ? '+' : ''}${formatCompactCurrency(unrealized)}',
+                          valueColor: unrealized >= 0
+                              ? const Color(0xFF34D399)
+                              : const Color(0xFFF87171),
+                          icon: Icons.show_chart_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: _MetricTile(
+                          label: 'All-Time ROI',
+                          value: '${roi >= 0 ? '+' : ''}${roi.toStringAsFixed(2)}%',
+                          valueColor: roi >= 0
+                              ? const Color(0xFF34D399)
+                              : const Color(0xFFF87171),
+                          icon: Icons.percent_rounded,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                formatCompactCurrency(totalBalance),
-                style: textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  letterSpacing: -1.1,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Row(
-                children: [
-                  Icon(
-                    dailyPnl >= 0
-                        ? Icons.arrow_upward_rounded
-                        : Icons.arrow_downward_rounded,
-                    color: dailyPnl >= 0 ? AppColors.success : AppColors.danger,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '24h ${dailyPnl >= 0 ? '+' : ''}${formatCompactCurrency(dailyPnl)}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.92),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Divider(color: Colors.white.withValues(alpha: 0.16), height: 1),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: _MetricTile(
-                      label: 'Invested',
-                      value: formatCompactCurrency(invested),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: _MetricTile(
-                      label: 'Unrealized',
-                      value:
-                          '${unrealized >= 0 ? '+' : ''}${formatCompactCurrency(unrealized)}',
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: _MetricTile(
-                      label: 'ROI',
-                      value: '${roi >= 0 ? '+' : ''}${roi.toStringAsFixed(2)}%',
-                      valueColor: roi >= 0
-                          ? AppColors.success
-                          : AppColors.danger,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -177,11 +421,13 @@ class _MetricTile extends StatelessWidget {
     required this.label,
     required this.value,
     this.valueColor,
+    required this.icon,
   });
 
   final String label;
   final String value;
   final Color? valueColor;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -189,28 +435,48 @@ class _MetricTile extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xs,
-        vertical: AppSpacing.xs,
+        horizontal: AppSpacing.sm,
+        vertical: 10,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        color: Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        color: Colors.white.withValues(alpha: 0.05),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: textTheme.bodySmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.68),
-            ),
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 11,
+                color: Colors.white.withValues(alpha: 0.5),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  label,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             value,
             style: textTheme.titleSmall?.copyWith(
               color: valueColor ?? Colors.white,
               fontWeight: FontWeight.w700,
+              fontSize: 13,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -221,18 +487,47 @@ class _MetricTile extends StatelessWidget {
   }
 }
 
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.size, required this.color});
-
-  final double size;
-  final Color color;
-
+/// Subtle holographic crypto card geometry painter (replaces generic circular blobs)
+class _CryptoCardBackgroundPainter extends CustomPainter {
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.02)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    // Subtle isometric grid lines
+    const step = 45.0;
+    for (double x = -size.height; x < size.width + size.height; x += step) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x + size.height * 0.7, size.height),
+        paint,
+      );
+    }
+
+    // Top-right holographic crypto corner accent
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFF38BDF8).withValues(alpha: 0.12),
+          const Color(0xFF6366F1).withValues(alpha: 0.04),
+          Colors.transparent,
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(size.width * 0.9, size.height * 0.1),
+          radius: size.width * 0.45,
+        ),
+      );
+
+    canvas.drawCircle(
+      Offset(size.width * 0.9, size.height * 0.1),
+      size.width * 0.45,
+      glowPaint,
     );
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
