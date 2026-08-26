@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:crpyto_portfolio/core/theme/app_theme_controller.dart';
+import 'package:crpyto_portfolio/features/shell/presentation/widgets/web3_bottom_nav_bar.dart';
 import 'package:crpyto_portfolio/main.dart';
 
 void main() {
@@ -26,7 +27,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Verify navigation tabs
+    // Verify navigation tabs in bottom dock
+    expect(find.byType(Web3BottomNavBar), findsOneWidget);
     expect(find.text('Home'), findsWidgets);
     expect(find.text('Markets'), findsWidgets);
     expect(find.text('Portfolio'), findsWidgets);
@@ -56,12 +58,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Performance (1M)'), findsOneWidget);
 
-    // Test Theme Toggle Switch
+    // Test Theme Toggle Switch on Home
     final themeToggleFinder = find.byTooltip('Switch to Light mode');
     expect(themeToggleFinder, findsOneWidget);
     await tester.tap(themeToggleFinder);
     await tester.pumpAndSettle();
 
     expect(themeController.preference, AppThemePreference.light);
+
+    // Test Navigating to Profile via Web3 Bottom Nav Bar
+    final profileTabFinder = find.descendant(
+      of: find.byType(Web3BottomNavBar),
+      matching: find.text('Profile'),
+    );
+    await tester.tap(profileTabFinder);
+    await tester.pumpAndSettle();
+
+    // Verify Clean & Professional Profile Elements
+    expect(find.text('Ahmaryar Khan'), findsWidgets);
+    expect(find.text('ahmar.khan@cryptovista.io'), findsOneWidget);
+    expect(find.text('Verified Level 2'), findsOneWidget);
+    expect(find.text('Biometric Authentication'), findsOneWidget);
+    expect(find.text('Two-Factor Authentication'), findsOneWidget);
+    expect(find.text('Local Currency'), findsOneWidget);
+    expect(find.text('Dark Theme'), findsOneWidget);
+    expect(find.text('Help Center & Support'), findsOneWidget);
+    expect(find.text('Log Out'), findsOneWidget);
   });
 }

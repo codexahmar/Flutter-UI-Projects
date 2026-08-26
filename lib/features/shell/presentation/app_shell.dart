@@ -12,6 +12,7 @@ import '../../profile/presentation/profile_screen.dart';
 import 'widgets/drawer_tab.dart';
 import 'widgets/theme_mode_tile.dart';
 import 'widgets/utility_tile.dart';
+import 'widgets/web3_bottom_nav_bar.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -309,48 +310,15 @@ class ShellScaffold extends StatelessWidget {
               ),
             ),
           ),
-          bottomNavigationBar: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.xs,
-              AppSpacing.md,
-              AppSpacing.md,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              child: NavigationBar(
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (index) {
-                  if (selectedTab.value == index) {
-                    return;
-                  }
-                  selectedTab.value = index;
-                  onTabChanged(index);
-                },
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home_rounded),
-                    label: 'Home',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.candlestick_chart_outlined),
-                    selectedIcon: Icon(Icons.candlestick_chart_rounded),
-                    label: 'Markets',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.account_balance_wallet_outlined),
-                    selectedIcon: Icon(Icons.account_balance_wallet_rounded),
-                    label: 'Portfolio',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.person_outline_rounded),
-                    selectedIcon: Icon(Icons.person_rounded),
-                    label: 'Profile',
-                  ),
-                ],
-              ),
-            ),
+          bottomNavigationBar: Web3BottomNavBar(
+            selectedIndex: selectedIndex,
+            onTap: (index) {
+              if (selectedTab.value == index) {
+                return;
+              }
+              selectedTab.value = index;
+              onTabChanged(index);
+            },
           ),
         );
       },
