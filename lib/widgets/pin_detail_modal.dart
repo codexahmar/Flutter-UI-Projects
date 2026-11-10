@@ -5,24 +5,21 @@ import '../themes/design_tokens.dart';
 
 class PinDetailModal extends StatefulWidget {
   final PinItem pin;
-  final List<PinItem> relatedPins;
+  final List<PinItem> allPins;
   final VoidCallback onToggleSave;
-  final ValueChanged<PinItem> onSelectPin;
 
   const PinDetailModal({
     super.key,
     required this.pin,
-    required this.relatedPins,
+    required this.allPins,
     required this.onToggleSave,
-    required this.onSelectPin,
   });
 
   static void show(
     BuildContext context, {
     required PinItem pin,
-    required List<PinItem> relatedPins,
+    required List<PinItem> allPins,
     required VoidCallback onToggleSave,
-    required ValueChanged<PinItem> onSelectPin,
   }) {
     showModalBottomSheet(
       context: context,
@@ -30,9 +27,8 @@ class PinDetailModal extends StatefulWidget {
       backgroundColor: Colors.transparent,
       builder: (ctx) => PinDetailModal(
         pin: pin,
-        relatedPins: relatedPins,
+        allPins: allPins,
         onToggleSave: onToggleSave,
-        onSelectPin: onSelectPin,
       ),
     );
   }
@@ -42,13 +38,24 @@ class PinDetailModal extends StatefulWidget {
 }
 
 class _PinDetailModalState extends State<PinDetailModal> {
+  late PinItem _currentPin;
   late bool _isSaved;
   bool _isFollowing = false;
 
   @override
   void initState() {
     super.initState();
+    _currentPin = widget.pin;
     _isSaved = widget.pin.isSaved;
+  }
+
+  void _switchToPin(PinItem nextPin) {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _currentPin = nextPin;
+      _isSaved = nextPin.isSaved;
+      _isFollowing = false;
+    });
   }
 
   @override
@@ -56,40 +63,83 @@ class _PinDetailModalState extends State<PinDetailModal> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final pillBg = isDark ? AppTokens.darkPill : AppTokens.lightPill;
+    final primaryInk = isDark ? Colors.white : Colors.black;
+    final onPrimaryInk = isDark ? Colors.black : Colors.white;
+
+    // Filter pins of the EXACT SAME CATEGORY for authentic Pinterest visual discovery
+    final sameCategoryPins = widget.allPins
+        .where((p) => p.id != _currentPin.id && p.category.toLowerCase() == _currentPin.category.toLowerCase())
+        .toList();
+    final relatedPins = sameCategoryPins.isNotEmpty
+        ? sameCategoryPins
+        : widget.allPins.where((p) => p.id != _currentPin.id).toList();
+
+    final leftRelated = <PinItem>[];
+    final rightRelated = <PinItem>[];
+    for (int i = 0; i < relatedPins.length; i++) {
+      if (i % 2 == 0) {
+        leftRelated.add(relatedPins[i]);
+      } else {
+        rightRelated.add(relatedPins[i]);
+      }
+    }
+
     return Container(
-      height: MediaQuery.of(context).size.height * 0.92,
+      height: MediaQuery.of(context).size.height * 0.94,
       decoration: BoxDecoration(
         color: isDark ? AppTokens.darkBg : AppTokens.lightBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTokens.radiusPin)),
       ),
       child: Column(
         children: [
-          // Top Action Header
+          // 1. Top Pinterest Action Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppTokens.space16, vertical: AppTokens.space12),
+            padding: const EdgeInsets.symmetric(horizontal: AppTokens.space12, vertical: AppTokens.space8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 24),
-                  onPressed: () => Navigator.pop(context),
+                Container(
+                  decoration: BoxDecoration(
+                    color: pillBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 22),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ),
                 Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.share_outlined, size: 22),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Pin link copied to clipboard'),
-                            duration: Duration(milliseconds: 1200),
-                          ),
-                        );
-                      },
+                    Container(
+                      decoration: BoxDecoration(
+                        color: pillBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.share_outlined, size: 20),
+                        tooltip: 'Share',
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Pin link copied to clipboard'),
+                              duration: Duration(milliseconds: 1200),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.more_horiz_rounded, size: 22),
-                      onPressed: () {},
+                    const SizedBox(width: AppTokens.space8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: pillBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.more_horiz_rounded, size: 20),
+                        tooltip: 'More options',
+                        onPressed: () {},
+                      ),
                     ),
                   ],
                 ),
@@ -97,32 +147,32 @@ class _PinDetailModalState extends State<PinDetailModal> {
             ),
           ),
 
-          // Scrollable Pin Body
+          // 2. Scrollable Pin Content
           Expanded(
             child: ListView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(AppTokens.space16, 0, AppTokens.space16, AppTokens.space32),
               children: [
-                // Full Pin Image
+                // Full High-Res Pin Image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppTokens.radiusPin),
                   child: Image.network(
-                    widget.pin.imageUrl,
+                    _currentPin.imageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Image.asset(
-                      widget.pin.assetFallback,
+                      _currentPin.assetFallback,
                       fit: BoxFit.cover,
                     ),
                   ),
                 ),
                 const SizedBox(height: AppTokens.space16),
 
-                // Creator Row & Follow Button
+                // Creator & Follow Button (Authentic Pinterest Button Colors)
                 Row(
                   children: [
                     ClipOval(
                       child: Image.asset(
-                        widget.pin.authorAvatar,
+                        _currentPin.authorAvatar,
                         width: 44,
                         height: 44,
                         fit: BoxFit.cover,
@@ -134,14 +184,14 @@ class _PinDetailModalState extends State<PinDetailModal> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.pin.author,
+                            _currentPin.author,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
                           Text(
-                            '12.4k followers',
+                            '14.8k followers',
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
@@ -150,22 +200,29 @@ class _PinDetailModalState extends State<PinDetailModal> {
                         ],
                       ),
                     ),
-                    FilledButton.tonal(
-                      style: FilledButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppTokens.radiusButton),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      ),
-                      onPressed: () {
+                    // Authentic Pinterest Follow Button
+                    InkWell(
+                      onTap: () {
                         HapticFeedback.lightImpact();
                         setState(() {
                           _isFollowing = !_isFollowing;
                         });
                       },
-                      child: Text(
-                        _isFollowing ? 'Following' : 'Follow',
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                      borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _isFollowing ? pillBg : primaryInk,
+                          borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+                        ),
+                        child: Text(
+                          _isFollowing ? 'Following' : 'Follow',
+                          style: TextStyle(
+                            color: _isFollowing ? primaryInk : onPrimaryInk,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -174,46 +231,71 @@ class _PinDetailModalState extends State<PinDetailModal> {
 
                 // Pin Title
                 Text(
-                  widget.pin.title,
-                  style: theme.textTheme.titleLarge?.copyWith(
+                  _currentPin.title,
+                  style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    letterSpacing: -0.3,
+                    fontSize: 22,
+                    letterSpacing: -0.4,
+                    height: 1.25,
                   ),
                 ),
                 const SizedBox(height: AppTokens.space8),
                 Text(
-                  'Saved to ${widget.pin.category} moodboard · Photos and inspiration curated for you.',
+                  'Saved to ${_currentPin.category} · Curated photos and visual ideas for your everyday moodboard.',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     height: 1.4,
                     color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
                   ),
                 ),
-                const SizedBox(height: AppTokens.space24),
+                const SizedBox(height: AppTokens.space20),
 
-                // Main Save Button Row
+                // Save & View Buttons (Authentic Pinterest Button Colors)
                 Row(
                   children: [
+                    // View Button (Neutral Pill)
                     Expanded(
-                      child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _isSaved
-                              ? (isDark ? Colors.white : Colors.black)
-                              : AppTokens.pinterestRed,
-                          foregroundColor: _isSaved
-                              ? (isDark ? Colors.black : Colors.white)
-                              : Colors.white,
-                          shape: RoundedRectangleBorder(
+                      flex: 1,
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Opening source website…'),
+                              duration: Duration(milliseconds: 1000),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: pillBg,
                             borderRadius: BorderRadius.circular(AppTokens.radiusButton),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'View',
+                            style: TextStyle(
+                              color: primaryInk,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
                         ),
-                        onPressed: () {
+                      ),
+                    ),
+                    const SizedBox(width: AppTokens.space12),
+
+                    // Save Button (Iconic Pinterest Red Pill)
+                    Expanded(
+                      flex: 1,
+                      child: InkWell(
+                        onTap: () {
                           HapticFeedback.lightImpact();
                           setState(() {
                             _isSaved = !_isSaved;
-                            widget.pin.isSaved = _isSaved;
+                            _currentPin.isSaved = _isSaved;
                           });
                           widget.onToggleSave();
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -225,79 +307,75 @@ class _PinDetailModalState extends State<PinDetailModal> {
                             ),
                           );
                         },
-                        child: Text(
-                          _isSaved ? 'Saved' : 'Save',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppTokens.space12),
-                    FilledButton.tonal(
-                      style: FilledButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppTokens.radiusButton),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      ),
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Opening source website…'),
-                            duration: Duration(milliseconds: 1000),
+                        borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: _isSaved ? primaryInk : AppTokens.pinterestRed,
+                            borderRadius: BorderRadius.circular(AppTokens.radiusButton),
                           ),
-                        );
-                      },
-                      child: const Text('View', style: TextStyle(fontWeight: FontWeight.bold)),
+                          alignment: Alignment.center,
+                          child: Text(
+                            _isSaved ? 'Saved' : 'Save',
+                            style: TextStyle(
+                              color: _isSaved ? onPrimaryInk : Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppTokens.space32),
+                const SizedBox(height: AppTokens.space24),
 
-                // More to explore section
-                Text(
-                  'More to explore',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                // 3. More Like This Section (Filtered to EXACT SAME CATEGORY)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'More like this',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      _currentPin.category,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppTokens.space16),
+                const SizedBox(height: AppTokens.space12),
 
-                // Related 2-column Pins
+                // Related 2-column Masonry Grid
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Column(
-                        children: widget.relatedPins
-                            .where((p) => p.id != widget.pin.id)
-                            .take(3)
-                            .map((p) => _RelatedPinThumb(
-                                  pin: p,
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    widget.onSelectPin(p);
-                                  },
-                                ))
-                            .toList(),
+                        children: leftRelated.map((p) {
+                          return _RelatedPinThumb(
+                            pin: p,
+                            onTap: () => _switchToPin(p),
+                          );
+                        }).toList(),
                       ),
                     ),
-                    const SizedBox(width: AppTokens.space12),
+                    const SizedBox(width: AppTokens.space8),
                     Expanded(
                       child: Column(
-                        children: widget.relatedPins
-                            .where((p) => p.id != widget.pin.id)
-                            .skip(3)
-                            .take(3)
-                            .map((p) => _RelatedPinThumb(
-                                  pin: p,
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    widget.onSelectPin(p);
-                                  },
-                                ))
-                            .toList(),
+                        children: rightRelated.map((p) {
+                          return _RelatedPinThumb(
+                            pin: p,
+                            onTap: () => _switchToPin(p),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ],
@@ -320,7 +398,7 @@ class _RelatedPinThumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppTokens.space12),
+      padding: const EdgeInsets.only(bottom: AppTokens.space8),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppTokens.radiusPin),

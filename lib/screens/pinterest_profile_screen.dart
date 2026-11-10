@@ -335,9 +335,8 @@ class _PinterestProfileScreenState extends State<PinterestProfileScreen> with Si
                           onTap: () => PinDetailModal.show(
                             context,
                             pin: pin,
-                            relatedPins: savedPins,
+                            allPins: widget.pins,
                             onToggleSave: widget.onToggleSave,
-                            onSelectPin: (_) {},
                           ),
                           onToggleSave: () {
                             pin.isSaved = !pin.isSaved;
@@ -356,9 +355,8 @@ class _PinterestProfileScreenState extends State<PinterestProfileScreen> with Si
                           onTap: () => PinDetailModal.show(
                             context,
                             pin: pin,
-                            relatedPins: savedPins,
+                            allPins: widget.pins,
                             onToggleSave: widget.onToggleSave,
-                            onSelectPin: (_) {},
                           ),
                           onToggleSave: () {
                             pin.isSaved = !pin.isSaved;

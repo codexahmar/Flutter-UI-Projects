@@ -152,9 +152,8 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                                   onTap: () => PinDetailModal.show(
                                     context,
                                     pin: pin,
-                                    relatedPins: filteredPins,
+                                    allPins: widget.pins,
                                     onToggleSave: widget.onToggleSave,
-                                    onSelectPin: (_) {},
                                   ),
                                   onToggleSave: () {
                                     pin.isSaved = !pin.isSaved;
@@ -173,9 +172,8 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                                   onTap: () => PinDetailModal.show(
                                     context,
                                     pin: pin,
-                                    relatedPins: filteredPins,
+                                    allPins: widget.pins,
                                     onToggleSave: widget.onToggleSave,
-                                    onSelectPin: (_) {},
                                   ),
                                   onToggleSave: () {
                                     pin.isSaved = !pin.isSaved;
@@ -305,11 +303,14 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.search_rounded, size: 15),
+                                const Icon(Icons.search_rounded, size: 14),
                                 const SizedBox(width: 6),
-                                Text(
-                                  term,
-                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                                Flexible(
+                                  child: Text(
+                                    term,
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),

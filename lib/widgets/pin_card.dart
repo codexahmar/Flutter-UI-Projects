@@ -22,14 +22,17 @@ class PinCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTokens.space12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // The Pin Image Container
-          InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppTokens.radiusPin),
-            child: ClipRRect(
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(AppTokens.radiusPin),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // The Pin Image Container
+            ClipRRect(
               borderRadius: BorderRadius.circular(AppTokens.radiusPin),
               child: AspectRatio(
                 aspectRatio: pin.aspectRatio,
@@ -107,48 +110,48 @@ class PinCard extends StatelessWidget {
                 ),
               ),
             ),
-          ),
 
-          // Title & Author below pin (Pinterest Style)
-          if (pin.title.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              pin.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-                height: 1.25,
-                color: theme.colorScheme.onSurface,
+            // Title & Author below pin (Pinterest Style)
+            if (pin.title.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                pin.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  height: 1.25,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                ClipOval(
-                  child: Image.asset(
-                    pin.authorAvatar,
-                    width: 18,
-                    height: 18,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    pin.author,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontSize: 11,
-                      color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  ClipOval(
+                    child: Image.asset(
+                      pin.authorAvatar,
+                      width: 18,
+                      height: 18,
+                      fit: BoxFit.cover,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      pin.author,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 11,
+                        color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

@@ -4,6 +4,8 @@ import '../data/pinterest_data.dart';
 import '../themes/design_tokens.dart';
 import '../widgets/pin_card.dart';
 import '../widgets/pin_detail_modal.dart';
+import '../widgets/shimmer_skeleton.dart';
+import '../widgets/staggered_pin_animation.dart';
 
 class PinterestHomeScreen extends StatefulWidget {
   final List<PinItem> pins;
@@ -21,13 +23,21 @@ class PinterestHomeScreen extends StatefulWidget {
 
 class _PinterestHomeScreenState extends State<PinterestHomeScreen> {
   String _selectedCategory = 'All';
-  bool _isLoading = false;
+  bool _isLoading = true;
   late List<PinItem> _displayPins;
 
   @override
   void initState() {
     super.initState();
     _displayPins = widget.pins;
+    // Show beautiful Pinterest shimmer skeleton loading on app startup
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    });
   }
 
   @override
@@ -66,13 +76,13 @@ class _PinterestHomeScreenState extends State<PinterestHomeScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     // Split into 2 staggered columns for authentic Pinterest masonry
-    final leftColumnPins = <PinItem>[];
-    final rightColumnPins = <PinItem>[];
+    final leftColumnPins = <MapEntry<int, PinItem>>[];
+    final rightColumnPins = <MapEntry<int, PinItem>>[];
     for (int i = 0; i < _displayPins.length; i++) {
       if (i % 2 == 0) {
-        leftColumnPins.add(_displayPins[i]);
+        leftColumnPins.add(MapEntry(i, _displayPins[i]));
       } else {
-        rightColumnPins.add(_displayPins[i]);
+        rightColumnPins.add(MapEntry(i, _displayPins[i]));
       }
     }
 
@@ -124,14 +134,10 @@ class _PinterestHomeScreenState extends State<PinterestHomeScreen> {
           ),
         ),
 
-        // 2. Pinterest 2-Column Staggered Masonry Grid
+        // 2. Body: Shimmer Skeleton on startup OR Staggered Animated Masonry Grid
         Expanded(
           child: _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator.adaptive(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppTokens.pinterestRed),
-                  ),
-                )
+              ? const PinterestMasonrySkeleton()
               : RefreshIndicator(
                   color: AppTokens.pinterestRed,
                   onRefresh: _refreshCategoryPins,
@@ -143,62 +149,56 @@ class _PinterestHomeScreenState extends State<PinterestHomeScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Left Masonry Column
+                        // Left Masonry Column with Staggered Animation
                         Expanded(
                           child: Column(
-                            children: leftColumnPins.map((pin) {
-                              return PinCard(
-                                pin: pin,
-                                onTap: () => PinDetailModal.show(
-                                  context,
+                            children: leftColumnPins.map((entry) {
+                              final index = entry.key;
+                              final pin = entry.value;
+
+                              return StaggeredPinAnimation(
+                                index: index,
+                                child: PinCard(
                                   pin: pin,
-                                  relatedPins: _displayPins,
-                                  onToggleSave: widget.onToggleSave,
-                                  onSelectPin: (selected) {
-                                    PinDetailModal.show(
-                                      context,
-                                      pin: selected,
-                                      relatedPins: _displayPins,
-                                      onToggleSave: widget.onToggleSave,
-                                      onSelectPin: (_) {},
-                                    );
+                                  onTap: () => PinDetailModal.show(
+                                    context,
+                                    pin: pin,
+                                    allPins: _displayPins,
+                                    onToggleSave: widget.onToggleSave,
+                                  ),
+                                  onToggleSave: () {
+                                    pin.isSaved = !pin.isSaved;
+                                    widget.onToggleSave();
                                   },
                                 ),
-                                onToggleSave: () {
-                                  pin.isSaved = !pin.isSaved;
-                                  widget.onToggleSave();
-                                },
                               );
                             }).toList(),
                           ),
                         ),
                         const SizedBox(width: AppTokens.space8),
 
-                        // Right Masonry Column
+                        // Right Masonry Column with Staggered Animation
                         Expanded(
                           child: Column(
-                            children: rightColumnPins.map((pin) {
-                              return PinCard(
-                                pin: pin,
-                                onTap: () => PinDetailModal.show(
-                                  context,
+                            children: rightColumnPins.map((entry) {
+                              final index = entry.key;
+                              final pin = entry.value;
+
+                              return StaggeredPinAnimation(
+                                index: index,
+                                child: PinCard(
                                   pin: pin,
-                                  relatedPins: _displayPins,
-                                  onToggleSave: widget.onToggleSave,
-                                  onSelectPin: (selected) {
-                                    PinDetailModal.show(
-                                      context,
-                                      pin: selected,
-                                      relatedPins: _displayPins,
-                                      onToggleSave: widget.onToggleSave,
-                                      onSelectPin: (_) {},
-                                    );
+                                  onTap: () => PinDetailModal.show(
+                                    context,
+                                    pin: pin,
+                                    allPins: _displayPins,
+                                    onToggleSave: widget.onToggleSave,
+                                  ),
+                                  onToggleSave: () {
+                                    pin.isSaved = !pin.isSaved;
+                                    widget.onToggleSave();
                                   },
                                 ),
-                                onToggleSave: () {
-                                  pin.isSaved = !pin.isSaved;
-                                  widget.onToggleSave();
-                                },
                               );
                             }).toList(),
                           ),

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inspirational_app_ui/main.dart';
 
 void main() {
-  testWidgets('Inspire Hub full interaction flow across all 4 screens', (WidgetTester tester) async {
-    // Smartphone viewport for reel/TikTok aspect ratio
+  testWidgets('Pinterest clone full interaction and navigation flow', (WidgetTester tester) async {
+    // Smartphone viewport for reel/TikTok aspect ratio (iPhone 14/15 Pro)
     tester.view.physicalSize = const Size(1170, 2532);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(() {
@@ -13,52 +13,91 @@ void main() {
     });
 
     await tester.pumpWidget(const MyApp());
+    // Pump and settle to let initial shimmer skeleton resolve
+    await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
 
-    // 1. Home Screen Verification (Original UI elevated)
-    expect(find.text('Find Your'), findsOneWidget);
-    expect(find.text('Inspiration'), findsOneWidget);
-    expect(find.text('Promo Today'), findsOneWidget);
-    expect(find.text('Best Design'), findsOneWidget);
-    expect(find.text('DAILY REFLECTION'), findsOneWidget);
+    // 1. Home Feed Verification (Pinterest Staggered Feed)
+    expect(find.text('All'), findsOneWidget);
+    expect(find.text('Home decor'), findsOneWidget);
+    expect(find.text('Outfits'), findsOneWidget);
 
-    // 2. Test Shuffle 5 Famous Short Quotes
-    expect(find.text('1/5'), findsOneWidget);
-    final quoteFinder = find.text('DAILY REFLECTION');
-    await tester.tap(quoteFinder);
-    await tester.pumpAndSettle();
-    expect(find.text('2/5'), findsOneWidget);
-
-    // 3. Test Theme Toggle (Dark/Light)
-    final themeIcon = find.byWidgetPredicate(
-      (w) => w is Icon && (w.icon == Icons.light_mode_rounded || w.icon == Icons.dark_mode_rounded),
-    );
-    expect(themeIcon, findsWidgets);
-    await tester.tap(themeIcon.first);
+    // 2. Test Category Pill Filter
+    final outfitsChip = find.text('Outfits');
+    await tester.tap(outfitsChip);
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
 
-    // 4. Test Favorites Tab Navigation
-    await tester.tap(find.text('Favorites'));
+    // 3. Test Pin Detail View with Same Category Recommendations
+    final pinFinder = find.text('Autumn tailored oversized trench styling');
+    expect(pinFinder, findsOneWidget);
+    await tester.tap(pinFinder);
     await tester.pumpAndSettle();
-    expect(find.text('Saved collection'), findsOneWidget);
 
-    // 5. Test Search / Explore Tab Navigation
-    await tester.tap(find.text('Search'));
-    await tester.pumpAndSettle();
-    expect(find.text('Fashion'), findsOneWidget);
-    expect(find.text('Minimal'), findsOneWidget);
+    // Verify Pin Detail Modal Elements
+    expect(find.text('Elena Mode'), findsWidgets);
+    expect(find.text('Follow'), findsOneWidget);
+    expect(find.text('View'), findsOneWidget);
+    expect(find.text('Save'), findsWidgets);
+    expect(find.text('More like this'), findsOneWidget);
 
-    // 6. Test Profile Tab Navigation
-    await tester.tap(find.text('Profile'));
+    // Close Pin Detail Modal
+    final closeBtn = find.byIcon(Icons.close_rounded);
+    expect(closeBtn, findsOneWidget);
+    await tester.tap(closeBtn);
     await tester.pumpAndSettle();
-    expect(find.text('alex.vance'), findsOneWidget);
+
+    // 4. Test Search Screen (Tab Index 1)
+    final searchTab = find.byTooltip('Search');
+    await tester.tap(searchTab);
+    await tester.pumpAndSettle();
+    expect(find.text('Search for ideas…'), findsOneWidget);
+    expect(find.text('Ideas for you'), findsOneWidget);
+    expect(find.text('Popular on Pinterest'), findsOneWidget);
+
+    // 5. Test Create Pin Modal (Tab Index 2)
+    final createTab = find.byTooltip('Create');
+    await tester.tap(createTab);
+    await tester.pumpAndSettle();
+    expect(find.text('Start creating now'), findsOneWidget);
+    expect(find.text('Pin'), findsOneWidget);
+    expect(find.text('Board'), findsOneWidget);
+
+    // Dismiss Create sheet
+    await tester.tapAt(const Offset(20, 20));
+    await tester.pumpAndSettle();
+
+    // 6. Test Updates Screen (Tab Index 3)
+    final updatesTab = find.byTooltip('Updates');
+    await tester.tap(updatesTab);
+    await tester.pumpAndSettle();
+    expect(find.text('Updates'), findsOneWidget);
+
+    // 7. Test Profile Screen (Tab Index 4 - User Avatar)
+    final profileTab = find.byType(InkWell).last;
+    await tester.tap(profileTab);
+    await tester.pumpAndSettle();
+
+    // Verify Pinterest Profile Screen
     expect(find.text('Alex Vance'), findsOneWidget);
-    expect(find.text('Followers'), findsOneWidget);
+    expect(find.text('@alexvance'), findsOneWidget);
+    expect(find.text('48.2k followers · 542 following'), findsOneWidget);
+    expect(find.text('Share'), findsOneWidget);
     expect(find.text('Edit profile'), findsOneWidget);
+    expect(find.text('Saved'), findsOneWidget);
+    expect(find.text('Created'), findsOneWidget);
+    expect(find.text('Design System & UI'), findsOneWidget);
+    expect(find.text('Streetwear & Fits'), findsOneWidget);
 
-    // 7. Return to Home Tab
-    await tester.tap(find.text('Home'));
+    // Test Theme Toggle in Profile
+    final themeToggle = find.byTooltip('Toggle Theme');
+    expect(themeToggle, findsOneWidget);
+    await tester.tap(themeToggle);
     await tester.pumpAndSettle();
-    expect(find.text('Best Design'), findsOneWidget);
+
+    // 8. Return to Home Tab
+    final homeTab = find.byTooltip('Home');
+    await tester.tap(homeTab);
+    await tester.pumpAndSettle();
   });
 }
