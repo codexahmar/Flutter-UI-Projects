@@ -111,7 +111,7 @@ class PinterestNavBar extends StatelessWidget {
                   ),
                   child: ClipOval(
                     child: Image.asset(
-                      'assets/images/6.jpg',
+                      'assets/images/profile.jpg',
                       width: 24,
                       height: 24,
                       fit: BoxFit.cover,

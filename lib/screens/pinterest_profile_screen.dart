@@ -120,7 +120,7 @@ class _PinterestProfileScreenState extends State<PinterestProfileScreen> with Si
                     ),
                     child: ClipOval(
                       child: Image.asset(
-                        'assets/images/6.jpg',
+                        'assets/images/profile.jpg',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -132,7 +132,7 @@ class _PinterestProfileScreenState extends State<PinterestProfileScreen> with Si
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Alex Vance',
+                        'Ahmaryar khan',
                         style: theme.textTheme.headlineMedium?.copyWith(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
@@ -148,25 +148,43 @@ class _PinterestProfileScreenState extends State<PinterestProfileScreen> with Si
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '@alexvance',
+                    '@codexahmar',
                     style: TextStyle(
                       fontSize: 13,
+                      fontWeight: FontWeight.w500,
                       color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Visual curator & architectural designer · London / Tokyo',
+                    'Software Engineer. I build cool stuff.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13,
-                      height: 1.35,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      height: 1.3,
                       color: theme.colorScheme.onSurface,
                     ),
                   ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.link_rounded, size: 14, color: theme.colorScheme.onSurface),
+                      const SizedBox(width: 4),
+                      Text(
+                        'github.com/codexahmar',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   Text(
-                    '48.2k followers · 542 following',
+                    '142 Pins · 12.8k followers · 420 following',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -234,13 +252,14 @@ class _PinterestProfileScreenState extends State<PinterestProfileScreen> with Si
             delegate: _SliverTabBarDelegate(
               TabBar(
                 controller: _tabController,
-                indicatorColor: theme.colorScheme.onSurface,
+                dividerColor: Colors.transparent,
+                indicatorColor: isDark ? Colors.white : Colors.black,
                 indicatorWeight: 3,
                 indicatorSize: TabBarIndicatorSize.label,
-                labelColor: theme.colorScheme.onSurface,
+                labelColor: isDark ? Colors.white : Colors.black,
                 unselectedLabelColor: isDark ? AppTokens.darkTextTertiary : AppTokens.lightTextTertiary,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                 tabs: const [
                   Tab(text: 'Saved'),
                   Tab(text: 'Created'),

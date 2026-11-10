@@ -17,18 +17,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
 
-    // 1. Home Feed Verification (Pinterest Staggered Feed)
-    expect(find.text('All'), findsOneWidget);
-    expect(find.text('Home decor'), findsOneWidget);
-    expect(find.text('Outfits'), findsOneWidget);
+    // 1. Home Feed Verification (Pinterest Official Header + Brand)
+    expect(find.text('Pinterest'), findsOneWidget);
+    expect(find.byTooltip('Create Pin'), findsOneWidget);
 
-    // 2. Test Category Pill Filter
-    final outfitsChip = find.text('Outfits');
-    await tester.tap(outfitsChip);
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.pumpAndSettle();
-
-    // 3. Test Pin Detail View with Same Category Recommendations
+    // 2. Test Pin Detail View with Same Category Recommendations
     final pinFinder = find.text('Autumn tailored oversized trench styling');
     expect(pinFinder, findsOneWidget);
     await tester.tap(pinFinder);
@@ -47,7 +40,7 @@ void main() {
     await tester.tap(closeBtn);
     await tester.pumpAndSettle();
 
-    // 4. Test Search Screen (Tab Index 1)
+    // 3. Test Search Screen (Tab Index 1)
     final searchTab = find.byTooltip('Search');
     await tester.tap(searchTab);
     await tester.pumpAndSettle();
@@ -55,7 +48,7 @@ void main() {
     expect(find.text('Ideas for you'), findsOneWidget);
     expect(find.text('Popular on Pinterest'), findsOneWidget);
 
-    // 5. Test Create Pin Modal (Tab Index 2)
+    // 4. Test Create Pin Modal (Tab Index 2)
     final createTab = find.byTooltip('Create');
     await tester.tap(createTab);
     await tester.pumpAndSettle();
@@ -67,21 +60,21 @@ void main() {
     await tester.tapAt(const Offset(20, 20));
     await tester.pumpAndSettle();
 
-    // 6. Test Updates Screen (Tab Index 3)
+    // 5. Test Updates Screen (Tab Index 3)
     final updatesTab = find.byTooltip('Updates');
     await tester.tap(updatesTab);
     await tester.pumpAndSettle();
     expect(find.text('Updates'), findsOneWidget);
 
-    // 7. Test Profile Screen (Tab Index 4 - User Avatar)
+    // 6. Test Profile Screen (Tab Index 4 - User Avatar)
     final profileTab = find.byType(InkWell).last;
     await tester.tap(profileTab);
     await tester.pumpAndSettle();
 
-    // Verify Pinterest Profile Screen
-    expect(find.text('Alex Vance'), findsOneWidget);
-    expect(find.text('@alexvance'), findsOneWidget);
-    expect(find.text('48.2k followers · 542 following'), findsOneWidget);
+    // Verify Ahmaryar khan Profile Screen
+    expect(find.text('Ahmaryar khan'), findsOneWidget);
+    expect(find.text('@codexahmar'), findsOneWidget);
+    expect(find.text('Software Engineer. I build cool stuff.'), findsOneWidget);
     expect(find.text('Share'), findsOneWidget);
     expect(find.text('Edit profile'), findsOneWidget);
     expect(find.text('Saved'), findsOneWidget);
@@ -95,9 +88,10 @@ void main() {
     await tester.tap(themeToggle);
     await tester.pumpAndSettle();
 
-    // 8. Return to Home Tab
+    // 7. Return to Home Tab
     final homeTab = find.byTooltip('Home');
     await tester.tap(homeTab);
     await tester.pumpAndSettle();
+    expect(find.text('Pinterest'), findsOneWidget);
   });
 }

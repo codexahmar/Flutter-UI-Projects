@@ -66,6 +66,8 @@ class _HomePageState extends State<HomePage> {
             PinterestHomeScreen(
               pins: _pins,
               onToggleSave: _onToggleSave,
+              onCreateTap: () => CreatePinModal.show(context),
+              onChatTap: () => setState(() => _selectedIndex = 3),
             ),
 
             // Tab 1: Search & Explore
