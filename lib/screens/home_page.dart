@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:inspirational_app_ui/widgets/animated_appbar.dart';
-import 'package:inspirational_app_ui/widgets/bottom_navbar.dart';
-import 'package:inspirational_app_ui/widgets/qoute_card.dart';
-import '../widgets/header_section.dart';
-import '../widgets/promo_section.dart';
-import '../widgets/banner_card.dart';
+import '../data/pinterest_data.dart';
+import '../widgets/pinterest_nav_bar.dart';
+import '../widgets/create_pin_modal.dart';
+import 'pinterest_home_screen.dart';
+import 'pinterest_search_screen.dart';
+import 'pinterest_updates_screen.dart';
+import 'pinterest_profile_screen.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onThemeToggle;
   final ThemeMode themeMode;
+
   const HomePage({
     super.key,
     required this.onThemeToggle,
@@ -21,58 +23,71 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  late List<PinItem> _pins;
 
-  final List<String> _promoImages = const [
-    '1.jpg',
-    '2.jpg',
-    '3.jpg',
-    '4.jpg',
-    '5.jpg',
-    '6.jpg',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _pins = PinterestData.getInitialPins();
+  }
 
   void _onNavTapped(int index) {
+    if (index == 2) {
+      // Tap on "+" Create action opens create pin bottom sheet modal
+      CreatePinModal.show(context);
+      return;
+    }
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _onToggleSave() {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // Map 5 tab indexes to view bodies (Index 2 is modal, so we have 4 views)
+    int viewIndex = _selectedIndex;
+    if (viewIndex > 2) {
+      viewIndex = _selectedIndex - 1; // 3 -> 2 (Updates), 4 -> 3 (Profile)
+    }
+
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      appBar: AnimatedAppBar(
-        onThemeToggle: widget.onThemeToggle,
-        themeMode: widget.themeMode,
-      ),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 80),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                HeaderSection(),
-                const SizedBox(height: 20),
-                PromoSection(
-                  promoImages: _promoImages,
-                ),
-                const SizedBox(height: 20),
-                BannerCard(),
-                const SizedBox(height: 20),
-                QuoteCard(
-                  quote:
-                      '"The best way to get started is to quit talking and begin doing."',
-                ),
-              ],
+        child: IndexedStack(
+          index: viewIndex,
+          children: [
+            // Tab 0: Home (Pinterest Staggered Masonry Feed)
+            PinterestHomeScreen(
+              pins: _pins,
+              onToggleSave: _onToggleSave,
             ),
-          ),
+
+            // Tab 1: Search & Explore
+            PinterestSearchScreen(
+              pins: _pins,
+              onToggleSave: _onToggleSave,
+            ),
+
+            // Tab 3: Updates
+            const PinterestUpdatesScreen(),
+
+            // Tab 4: Profile
+            PinterestProfileScreen(
+              themeMode: widget.themeMode,
+              onThemeToggle: widget.onThemeToggle,
+              pins: _pins,
+              onToggleSave: _onToggleSave,
+            ),
+          ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
+      bottomNavigationBar: PinterestNavBar(
         selectedIndex: _selectedIndex,
         onTap: _onNavTapped,
       ),
