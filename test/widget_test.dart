@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:inspirational_app_ui/main.dart';
+import 'package:pinterest_ui_clone/main.dart';
 
 void main() {
   testWidgets('Pinterest clone full interaction and navigation flow', (WidgetTester tester) async {
@@ -82,16 +82,20 @@ void main() {
     expect(find.text('Design System & UI'), findsOneWidget);
     expect(find.text('Streetwear & Fits'), findsOneWidget);
 
-    // Test Theme Toggle in Profile
-    final themeToggle = find.byTooltip('Toggle Theme');
-    expect(themeToggle, findsOneWidget);
-    await tester.tap(themeToggle);
-    await tester.pumpAndSettle();
-
     // 7. Return to Home Tab
     final homeTab = find.byTooltip('Home');
     await tester.tap(homeTab);
     await tester.pumpAndSettle();
+    expect(find.text('Pinterest'), findsOneWidget);
+  });
+
+  testWidgets('PinterestSplashScreen renders centered logo on startup', (WidgetTester tester) async {
+    await tester.pumpWidget(const MyApp());
+    // On the first frame, splash screen is displayed with Pinterest circular logo
+    expect(find.byType(Image), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
+    // Resolves to home feed
     expect(find.text('Pinterest'), findsOneWidget);
   });
 }

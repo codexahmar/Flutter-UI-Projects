@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../data/pinterest_data.dart';
 import '../themes/design_tokens.dart';
+import 'pin_options_sheet.dart';
 
 class PinCard extends StatelessWidget {
   final PinItem pin;
@@ -18,7 +19,6 @@ class PinCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTokens.space12),
@@ -26,6 +26,9 @@ class PinCard extends StatelessWidget {
         onTap: () {
           HapticFeedback.lightImpact();
           onTap();
+        },
+        onLongPress: () {
+          PinOptionsSheet.show(context, pin: pin);
         },
         borderRadius: BorderRadius.circular(AppTokens.radiusPin),
         child: Column(
@@ -64,12 +67,12 @@ class PinCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: pin.isSaved
-                                ? (isDark ? Colors.white : Colors.black)
+                                ? Colors.black
                                 : AppTokens.pinterestRed,
                             borderRadius: BorderRadius.circular(AppTokens.radiusButton),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
+                                color: Colors.black.withValues(alpha: 0.2),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
@@ -77,10 +80,8 @@ class PinCard extends StatelessWidget {
                           ),
                           child: Text(
                             pin.isSaved ? 'Saved' : 'Save',
-                            style: TextStyle(
-                              color: pin.isSaved
-                                  ? (isDark ? Colors.black : Colors.white)
-                                  : Colors.white,
+                            style: const TextStyle(
+                              color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
@@ -93,16 +94,22 @@ class PinCard extends StatelessWidget {
                     Positioned(
                       bottom: 8,
                       right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.55),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.more_horiz_rounded,
-                          color: Colors.white,
-                          size: 16,
+                      child: InkWell(
+                        onTap: () {
+                          PinOptionsSheet.show(context, pin: pin);
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.55),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.more_horiz_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ),
@@ -142,7 +149,7 @@ class PinCard extends StatelessWidget {
                       pin.author,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 11,
-                        color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+                        color: AppTokens.lightTextSecondary,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),

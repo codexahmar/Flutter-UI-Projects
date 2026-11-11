@@ -55,11 +55,9 @@ class PinterestMasonrySkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final baseColor = isDark ? AppTokens.darkPill : AppTokens.lightPill;
+    const baseColor = AppTokens.lightPill;
 
-    return ShimmerLoading(
+    return const ShimmerLoading(
       child: SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: AppTokens.space8),

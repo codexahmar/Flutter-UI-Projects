@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_assets.dart';
 import '../themes/design_tokens.dart';
 
 /// Official Pinterest Logo (Image Asset)
@@ -11,7 +12,7 @@ class PinterestLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipOval(
       child: Image.asset(
-        'assets/images/pinterest-logo.png',
+        AppAssets.pinterestLogo,
         width: size,
         height: size,
         fit: BoxFit.cover,
@@ -33,25 +34,22 @@ class PinterestOfficialHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppTokens.space16, AppTokens.space8, AppTokens.space16, AppTokens.space4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Left: Official Logo + Pinterest text (black on light screen, white on dark screen)
-          Row(
+          // Left: Official Logo + Pinterest text
+          const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const PinterestLogo(size: 32),
-              const SizedBox(width: AppTokens.space8),
+              PinterestLogo(size: 32),
+              SizedBox(width: AppTokens.space8),
               Text(
                 'Pinterest',
                 style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black,
+                  color: Colors.black,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.6,
@@ -67,10 +65,10 @@ class PinterestOfficialHeader extends StatelessWidget {
               // Plus Icon
               IconButton(
                 visualDensity: VisualDensity.compact,
-                icon: Icon(
+                icon: const Icon(
                   Icons.add_rounded,
                   size: 28,
-                  color: isDark ? Colors.white : Colors.black,
+                  color: Colors.black,
                 ),
                 tooltip: 'Create Pin',
                 onPressed: onCreateTap,
@@ -86,10 +84,10 @@ class PinterestOfficialHeader extends StatelessWidget {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.chat_outlined,
                         size: 24,
-                        color: isDark ? Colors.white : Colors.black,
+                        color: Colors.black,
                       ),
                       // Red notification dot
                       Positioned(

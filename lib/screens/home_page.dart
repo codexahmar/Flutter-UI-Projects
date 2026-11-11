@@ -8,14 +8,7 @@ import 'pinterest_updates_screen.dart';
 import 'pinterest_profile_screen.dart';
 
 class HomePage extends StatefulWidget {
-  final VoidCallback onThemeToggle;
-  final ThemeMode themeMode;
-
-  const HomePage({
-    super.key,
-    required this.onThemeToggle,
-    required this.themeMode,
-  });
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -81,8 +74,6 @@ class _HomePageState extends State<HomePage> {
 
             // Tab 4: Profile
             PinterestProfileScreen(
-              themeMode: widget.themeMode,
-              onThemeToggle: widget.onThemeToggle,
               pins: _pins,
               onToggleSave: _onToggleSave,
             ),

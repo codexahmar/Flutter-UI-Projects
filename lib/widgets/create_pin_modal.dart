@@ -16,12 +16,11 @@ class CreatePinModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppTokens.darkSurface : AppTokens.lightSurface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTokens.radiusPin)),
+      decoration: const BoxDecoration(
+        color: AppTokens.lightSurface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTokens.radiusPin)),
       ),
       padding: const EdgeInsets.fromLTRB(AppTokens.space20, AppTokens.space12, AppTokens.space20, AppTokens.space32),
       child: Column(
@@ -33,7 +32,7 @@ class CreatePinModal extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -113,7 +112,6 @@ class _CreateOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return InkWell(
       onTap: () {
@@ -124,7 +122,7 @@ class _CreateOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppTokens.space12),
         decoration: BoxDecoration(
-          color: isDark ? AppTokens.darkPill : AppTokens.lightPill,
+          color: AppTokens.lightPill,
           borderRadius: BorderRadius.circular(AppTokens.radiusPin),
         ),
         child: Row(
@@ -152,9 +150,9 @@ class _CreateOption extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+                      color: AppTokens.lightTextSecondary,
                     ),
                   ),
                 ],

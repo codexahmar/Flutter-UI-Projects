@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../data/pinterest_data.dart';
 import '../themes/design_tokens.dart';
-import '../widgets/pin_card.dart';
+import '../widgets/masonry_grid.dart';
 import '../widgets/pin_detail_modal.dart';
 
 class PinterestSearchScreen extends StatefulWidget {
@@ -32,7 +32,6 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     final filteredPins = widget.pins.where((p) {
       if (_query.isEmpty) return true;
@@ -42,16 +41,6 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
           p.author.toLowerCase().contains(q);
     }).toList();
 
-    final leftPins = <PinItem>[];
-    final rightPins = <PinItem>[];
-    for (int i = 0; i < filteredPins.length; i++) {
-      if (i % 2 == 0) {
-        leftPins.add(filteredPins[i]);
-      } else {
-        rightPins.add(filteredPins[i]);
-      }
-    }
-
     return Column(
       children: [
         // 1. Pinterest Iconic Search Bar
@@ -60,16 +49,16 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
           child: Container(
             height: 48,
             decoration: BoxDecoration(
-              color: isDark ? AppTokens.darkPill : AppTokens.lightPill,
+              color: AppTokens.lightPill,
               borderRadius: BorderRadius.circular(AppTokens.radiusPill),
             ),
             padding: const EdgeInsets.symmetric(horizontal: AppTokens.space16),
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.search_rounded,
                   size: 22,
-                  color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+                  color: AppTokens.lightTextSecondary,
                 ),
                 const SizedBox(width: AppTokens.space12),
                 Expanded(
@@ -85,11 +74,11 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                       fontWeight: FontWeight.w500,
                       color: theme.colorScheme.onSurface,
                     ),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Search for ideas…',
                       hintStyle: TextStyle(
                         fontSize: 14,
-                        color: isDark ? AppTokens.darkTextTertiary : AppTokens.lightTextTertiary,
+                        color: AppTokens.lightTextTertiary,
                       ),
                       border: InputBorder.none,
                       isDense: true,
@@ -107,10 +96,10 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                     },
                   )
                 else
-                  Icon(
+                  const Icon(
                     Icons.camera_alt_outlined,
                     size: 20,
-                    color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+                    color: AppTokens.lightTextSecondary,
                   ),
               ],
             ),
@@ -128,7 +117,7 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                           Icon(
                             Icons.search_off_rounded,
                             size: 48,
-                            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
+                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                           ),
                           const SizedBox(height: AppTokens.space12),
                           Text(
@@ -138,53 +127,19 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                         ],
                       ),
                     )
-                  : SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(AppTokens.space8, AppTokens.space8, AppTokens.space8, 96),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              children: leftPins.map((pin) {
-                                return PinCard(
-                                  pin: pin,
-                                  onTap: () => PinDetailModal.show(
-                                    context,
-                                    pin: pin,
-                                    allPins: widget.pins,
-                                    onToggleSave: widget.onToggleSave,
-                                  ),
-                                  onToggleSave: () {
-                                    pin.isSaved = !pin.isSaved;
-                                    widget.onToggleSave();
-                                  },
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                          const SizedBox(width: AppTokens.space8),
-                          Expanded(
-                            child: Column(
-                              children: rightPins.map((pin) {
-                                return PinCard(
-                                  pin: pin,
-                                  onTap: () => PinDetailModal.show(
-                                    context,
-                                    pin: pin,
-                                    allPins: widget.pins,
-                                    onToggleSave: widget.onToggleSave,
-                                  ),
-                                  onToggleSave: () {
-                                    pin.isSaved = !pin.isSaved;
-                                    widget.onToggleSave();
-                                  },
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ],
+                  : PinterestMasonryGrid(
+                      pins: filteredPins,
+                      enableAnimation: false,
+                      onPinTap: (pin) => PinDetailModal.show(
+                        context,
+                        pin: pin,
+                        allPins: widget.pins,
+                        onToggleSave: widget.onToggleSave,
                       ),
+                      onToggleSave: (pin) {
+                        pin.isSaved = !pin.isSaved;
+                        widget.onToggleSave();
+                      },
                     ))
               : ListView(
                   physics: const BouncingScrollPhysics(),
@@ -235,7 +190,7 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                                   ),
                                 ),
                                 Container(
-                                  color: Colors.black.withOpacity(0.42),
+                                  color: Colors.black.withValues(alpha: 0.42),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.all(AppTokens.space12),
@@ -256,7 +211,7 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.8),
+                                          color: Colors.white.withValues(alpha: 0.8),
                                           fontSize: 11,
                                         ),
                                       ),
@@ -297,7 +252,7 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                             decoration: BoxDecoration(
-                              color: isDark ? AppTokens.darkPill : AppTokens.lightPill,
+                              color: AppTokens.lightPill,
                               borderRadius: BorderRadius.circular(AppTokens.radiusPill),
                             ),
                             child: Row(

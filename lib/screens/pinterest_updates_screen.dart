@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_assets.dart';
 import '../themes/design_tokens.dart';
 
 class PinterestUpdatesScreen extends StatelessWidget {
@@ -7,28 +8,27 @@ class PinterestUpdatesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     final updates = [
       _UpdateItem(
         title: 'Studio Ark saved your pin to Architecture',
         time: '2h',
-        image: 'assets/images/5.jpg',
+        image: AppAssets.image5,
       ),
       _UpdateItem(
         title: 'New ideas for you: 15 Minimalist Streetwear Looks',
         time: '5h',
-        image: 'assets/images/1.jpg',
+        image: AppAssets.image1,
       ),
       _UpdateItem(
         title: 'Julian V added a pin to Studio & Lights',
         time: '1d',
-        image: 'assets/images/2.jpg',
+        image: AppAssets.image2,
       ),
       _UpdateItem(
         title: 'Trending in Tokyo: Neon Cyberpunk aesthetics',
         time: '2d',
-        image: 'assets/images/3.jpg',
+        image: AppAssets.image3,
       ),
     ];
 
@@ -75,9 +75,9 @@ class PinterestUpdatesScreen extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         u.time,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: isDark ? AppTokens.darkTextTertiary : AppTokens.lightTextTertiary,
+                          color: AppTokens.lightTextTertiary,
                         ),
                       ),
                     ],

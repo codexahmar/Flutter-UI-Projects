@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../constants/app_assets.dart';
 import '../themes/design_tokens.dart';
 
 class PinterestNavBar extends StatelessWidget {
@@ -15,17 +16,15 @@ class PinterestNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final activeColor = isDark ? Colors.white : Colors.black;
-    final inactiveColor = isDark ? AppTokens.darkTextTertiary : AppTokens.lightTextTertiary;
+    const activeColor = Colors.black;
+    const inactiveColor = AppTokens.lightTextTertiary;
 
     return Container(
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.3),
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
             width: 0.5,
           ),
         ),
@@ -111,7 +110,7 @@ class PinterestNavBar extends StatelessWidget {
                   ),
                   child: ClipOval(
                     child: Image.asset(
-                      'assets/images/profile.jpg',
+                      AppAssets.profile,
                       width: 24,
                       height: 24,
                       fit: BoxFit.cover,

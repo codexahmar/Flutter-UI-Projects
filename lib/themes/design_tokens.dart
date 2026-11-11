@@ -24,7 +24,7 @@ class AppTokens {
   static const Color pinterestRed = Color(0xFFE60023); // The iconic Pinterest Red
   static const Color pinterestRedDark = Color(0xFFB6001B);
 
-  // Light Mode (Crisp White + Soft Neutral Grays)
+  // Pinterest Light Color Palette (Crisp White + Soft Neutral Grays)
   static const Color lightBg = Color(0xFFFFFFFF);
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightPill = Color(0xFFE9E9E9);
@@ -33,14 +33,4 @@ class AppTokens {
   static const Color lightTextPrimary = Color(0xFF111111);
   static const Color lightTextSecondary = Color(0xFF5F5F5F);
   static const Color lightTextTertiary = Color(0xFF8E8E8E);
-
-  // Dark Mode (Deep Charcoal + Elevated Pitch Surface)
-  static const Color darkBg = Color(0xFF121212);
-  static const Color darkSurface = Color(0xFF1C1C1C);
-  static const Color darkPill = Color(0xFF2B2B2B);
-  static const Color darkPillHover = Color(0xFF383838);
-  static const Color darkBorder = Color(0xFF2C2C2C);
-  static const Color darkTextPrimary = Color(0xFFFFFFFF);
-  static const Color darkTextSecondary = Color(0xFFB5B5B5);
-  static const Color darkTextTertiary = Color(0xFF757575);
 }

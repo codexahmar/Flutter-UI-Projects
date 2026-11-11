@@ -18,6 +18,7 @@ class _StaggeredPinAnimationState extends State<StaggeredPinAnimation>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slide;
+  late Animation<double> _scale;
   late Animation<double> _fade;
 
   @override
@@ -25,24 +26,29 @@ class _StaggeredPinAnimationState extends State<StaggeredPinAnimation>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 450),
     );
 
     _slide = Tween<Offset>(
-      begin: const Offset(0, 0.12),
+      begin: const Offset(0, 0.08),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOutCubic,
     ));
 
-    _fade = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+    _scale = Tween<double>(begin: 0.92, end: 1.0).animate(CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeIn,
+      curve: Curves.easeOutCubic,
     ));
 
-    // Stagger start by index
-    final delayMs = (widget.index * 45).clamp(0, 350);
+    _fade = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+
+    // Stagger entrance one-by-one with crisp delay per item index
+    final delayMs = (widget.index * 55).clamp(0, 450);
     Future.delayed(Duration(milliseconds: delayMs), () {
       if (mounted) {
         _controller.forward();
@@ -58,11 +64,14 @@ class _StaggeredPinAnimationState extends State<StaggeredPinAnimation>
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _slide,
-      child: FadeTransition(
-        opacity: _fade,
-        child: widget.child,
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(
+        position: _slide,
+        child: ScaleTransition(
+          scale: _scale,
+          child: widget.child,
+        ),
       ),
     );
   }

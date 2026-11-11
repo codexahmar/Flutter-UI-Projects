@@ -61,11 +61,9 @@ class _PinDetailModalState extends State<PinDetailModal> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final pillBg = isDark ? AppTokens.darkPill : AppTokens.lightPill;
-    final primaryInk = isDark ? Colors.white : Colors.black;
-    final onPrimaryInk = isDark ? Colors.black : Colors.white;
+    const pillBg = AppTokens.lightPill;
+    const primaryInk = Colors.black;
+    const onPrimaryInk = Colors.white;
 
     // Filter pins of the EXACT SAME CATEGORY for authentic Pinterest visual discovery
     final sameCategoryPins = widget.allPins
@@ -88,7 +86,7 @@ class _PinDetailModalState extends State<PinDetailModal> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.94,
       decoration: BoxDecoration(
-        color: isDark ? AppTokens.darkBg : AppTokens.lightBg,
+        color: AppTokens.lightBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTokens.radiusPin)),
       ),
       child: Column(
@@ -194,7 +192,7 @@ class _PinDetailModalState extends State<PinDetailModal> {
                             '14.8k followers',
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+                              color: AppTokens.lightTextSecondary,
                             ),
                           ),
                         ],
@@ -245,7 +243,7 @@ class _PinDetailModalState extends State<PinDetailModal> {
                   style: TextStyle(
                     fontSize: 13,
                     height: 1.4,
-                    color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+                    color: AppTokens.lightTextSecondary,
                   ),
                 ),
                 const SizedBox(height: AppTokens.space20),
@@ -346,7 +344,7 @@ class _PinDetailModalState extends State<PinDetailModal> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppTokens.darkTextSecondary : AppTokens.lightTextSecondary,
+                        color: AppTokens.lightTextSecondary,
                       ),
                     ),
                   ],
