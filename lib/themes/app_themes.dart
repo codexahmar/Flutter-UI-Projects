@@ -5,10 +5,23 @@ import 'design_tokens.dart';
 class AppThemes {
   AppThemes._();
 
+  static const List<String> fontFallbacks = [
+    '-apple-system',
+    'BlinkMacSystemFont',
+    'SF Pro Display',
+    'SF Pro Text',
+    'Roboto',
+    'Inter',
+    'Segoe UI',
+    'Helvetica Neue',
+    'sans-serif',
+  ];
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
+      fontFamilyFallback: fontFallbacks,
       scaffoldBackgroundColor: AppTokens.lightBg,
       colorScheme: const ColorScheme.light(
         surface: AppTokens.lightSurface,

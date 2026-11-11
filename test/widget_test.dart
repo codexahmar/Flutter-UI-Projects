@@ -22,13 +22,13 @@ void main() {
     expect(find.byTooltip('Create Pin'), findsOneWidget);
 
     // 2. Test Pin Detail View with Same Category Recommendations
-    final pinFinder = find.text('Autumn tailored oversized trench styling');
+    final pinFinder = find.text('Clean dark mode Flutter IDE coding workspace');
     expect(pinFinder, findsOneWidget);
     await tester.tap(pinFinder);
     await tester.pumpAndSettle();
 
     // Verify Pin Detail Modal Elements
-    expect(find.text('Elena Mode'), findsWidgets);
+    expect(find.text('CodeForge'), findsWidgets);
     expect(find.text('Follow'), findsOneWidget);
     expect(find.text('View'), findsOneWidget);
     expect(find.text('Save'), findsWidgets);
@@ -67,7 +67,7 @@ void main() {
     expect(find.text('Updates'), findsOneWidget);
 
     // 6. Test Profile Screen (Tab Index 4 - User Avatar)
-    final profileTab = find.byType(InkWell).last;
+    final profileTab = find.byKey(const ValueKey('profile_tab'));
     await tester.tap(profileTab);
     await tester.pumpAndSettle();
 
@@ -79,8 +79,8 @@ void main() {
     expect(find.text('Edit profile'), findsOneWidget);
     expect(find.text('Saved'), findsOneWidget);
     expect(find.text('Created'), findsOneWidget);
-    expect(find.text('Design System & UI'), findsOneWidget);
-    expect(find.text('Streetwear & Fits'), findsOneWidget);
+    expect(find.text('Coding & Setups'), findsOneWidget);
+    expect(find.text('Cute DPs & Avatars'), findsOneWidget);
 
     // 7. Return to Home Tab
     final homeTab = find.byTooltip('Home');

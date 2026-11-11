@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../data/pinterest_data.dart';
 import '../themes/design_tokens.dart';
@@ -83,7 +84,7 @@ class _PinterestHomeScreenState extends State<PinterestHomeScreen> {
       futures.add(_safePrecache(AssetImage(pin.authorAvatar)));
 
       if (!_isTest && pin.imageUrl.isNotEmpty) {
-        futures.add(_safePrecache(NetworkImage(pin.imageUrl)));
+        futures.add(_safePrecache(CachedNetworkImageProvider(pin.imageUrl)));
       }
     }
 
@@ -139,7 +140,7 @@ class _PinterestHomeScreenState extends State<PinterestHomeScreen> {
       for (final pin in newPins.take(6)) {
         futures.add(_safePrecache(AssetImage(pin.assetFallback)));
         if (!_isTest && pin.imageUrl.isNotEmpty) {
-          futures.add(_safePrecache(NetworkImage(pin.imageUrl)));
+          futures.add(_safePrecache(CachedNetworkImageProvider(pin.imageUrl)));
         }
       }
       await Future.wait(futures);

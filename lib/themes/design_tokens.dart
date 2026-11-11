@@ -24,12 +24,13 @@ class AppTokens {
   static const Color pinterestRed = Color(0xFFE60023); // The iconic Pinterest Red
   static const Color pinterestRedDark = Color(0xFFB6001B);
 
-  // Pinterest Light Color Palette (Crisp White + Soft Neutral Grays)
+  // Pinterest Light Color Palette (Crisp Pure White + Clean Soft Neutrals)
   static const Color lightBg = Color(0xFFFFFFFF);
   static const Color lightSurface = Color(0xFFFFFFFF);
-  static const Color lightPill = Color(0xFFE9E9E9);
-  static const Color lightPillHover = Color(0xFFDADADA);
-  static const Color lightBorder = Color(0xFFE0E0E0);
+  static const Color lightPill = Color(0xFFF0F0F0); // Clean, airy Pinterest soft neutral (never murky grey)
+  static const Color lightPillHover = Color(0xFFE5E5E5);
+  static const Color lightPillBorder = Color(0xFFE2E2E2);
+  static const Color lightBorder = Color(0xFFEAEAEA); // Subtle hair-thin divider
   static const Color lightTextPrimary = Color(0xFF111111);
   static const Color lightTextSecondary = Color(0xFF5F5F5F);
   static const Color lightTextTertiary = Color(0xFF8E8E8E);

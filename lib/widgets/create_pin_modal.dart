@@ -15,8 +15,6 @@ class CreatePinModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Container(
       decoration: const BoxDecoration(
         color: AppTokens.lightSurface,
@@ -32,17 +30,19 @@ class CreatePinModal extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                color: AppTokens.lightBorder,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           const SizedBox(height: AppTokens.space16),
-          Text(
+          const Text(
             'Start creating now',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+              letterSpacing: -0.4,
+              color: AppTokens.lightTextPrimary,
             ),
           ),
           const SizedBox(height: AppTokens.space16),
@@ -111,8 +111,6 @@ class _CreateOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return InkWell(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -120,20 +118,21 @@ class _CreateOption extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(AppTokens.radiusPin),
       child: Container(
-        padding: const EdgeInsets.all(AppTokens.space12),
+        padding: const EdgeInsets.symmetric(horizontal: AppTokens.space16, vertical: AppTokens.space12),
         decoration: BoxDecoration(
-          color: AppTokens.lightPill,
+          color: Colors.white,
+          border: Border.all(color: AppTokens.lightBorder, width: 1.0),
           borderRadius: BorderRadius.circular(AppTokens.radiusPin),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF7F7F7),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 22, color: theme.colorScheme.onSurface),
+              child: Icon(icon, size: 22, color: AppTokens.lightTextPrimary),
             ),
             const SizedBox(width: AppTokens.space16),
             Expanded(
@@ -142,9 +141,11 @@ class _CreateOption extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
                       fontSize: 15,
+                      letterSpacing: -0.2,
+                      color: AppTokens.lightTextPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -158,7 +159,7 @@ class _CreateOption extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, size: 20),
+            const Icon(Icons.chevron_right_rounded, size: 20, color: AppTokens.lightTextTertiary),
           ],
         ),
       ),

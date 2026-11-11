@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../data/pinterest_data.dart';
 import '../themes/design_tokens.dart';
+import 'pin_options_sheet.dart';
 
 class PinDetailModal extends StatefulWidget {
   final PinItem pin;
@@ -60,11 +62,6 @@ class _PinDetailModalState extends State<PinDetailModal> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    const pillBg = AppTokens.lightPill;
-    const primaryInk = Colors.black;
-    const onPrimaryInk = Colors.white;
-
     // Filter pins of the EXACT SAME CATEGORY for authentic Pinterest visual discovery
     final sameCategoryPins = widget.allPins
         .where((p) => p.id != _currentPin.id && p.category.toLowerCase() == _currentPin.category.toLowerCase())
@@ -99,11 +96,12 @@ class _PinDetailModalState extends State<PinDetailModal> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: pillBg,
+                    color: Colors.white,
+                    border: Border.all(color: AppTokens.lightBorder, width: 1),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 22),
+                    icon: const Icon(Icons.close_rounded, size: 22, color: Colors.black),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -111,11 +109,12 @@ class _PinDetailModalState extends State<PinDetailModal> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: pillBg,
+                        color: Colors.white,
+                        border: Border.all(color: AppTokens.lightBorder, width: 1),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.share_outlined, size: 20),
+                        icon: const Icon(Icons.share_outlined, size: 20, color: Colors.black),
                         tooltip: 'Share',
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -130,13 +129,16 @@ class _PinDetailModalState extends State<PinDetailModal> {
                     const SizedBox(width: AppTokens.space8),
                     Container(
                       decoration: BoxDecoration(
-                        color: pillBg,
+                        color: Colors.white,
+                        border: Border.all(color: AppTokens.lightBorder, width: 1),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.more_horiz_rounded, size: 20),
+                        icon: const Icon(Icons.more_horiz_rounded, size: 20, color: Colors.black),
                         tooltip: 'More options',
-                        onPressed: () {},
+                        onPressed: () {
+                          PinOptionsSheet.show(context, pin: _currentPin);
+                        },
                       ),
                     ),
                   ],
@@ -154,12 +156,20 @@ class _PinDetailModalState extends State<PinDetailModal> {
                 // Full High-Res Pin Image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppTokens.radiusPin),
-                  child: Image.network(
-                    _currentPin.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Image.asset(
-                      _currentPin.assetFallback,
+                  child: AspectRatio(
+                    aspectRatio: _currentPin.aspectRatio,
+                    child: CachedNetworkImage(
+                      imageUrl: _currentPin.imageUrl,
                       fit: BoxFit.cover,
+                      fadeInDuration: const Duration(milliseconds: 180),
+                      fadeOutDuration: const Duration(milliseconds: 120),
+                      placeholder: (_, __) => Container(
+                        color: AppTokens.lightPill,
+                      ),
+                      errorWidget: (_, __, ___) => Image.asset(
+                        _currentPin.assetFallback,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
@@ -183,12 +193,14 @@ class _PinDetailModalState extends State<PinDetailModal> {
                         children: [
                           Text(
                             _currentPin.author,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
                               fontSize: 14,
+                              letterSpacing: -0.2,
+                              color: AppTokens.lightTextPrimary,
                             ),
                           ),
-                          Text(
+                          const Text(
                             '14.8k followers',
                             style: TextStyle(
                               fontSize: 12,
@@ -210,14 +222,17 @@ class _PinDetailModalState extends State<PinDetailModal> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                         decoration: BoxDecoration(
-                          color: _isFollowing ? pillBg : primaryInk,
+                          color: _isFollowing ? Colors.white : Colors.black,
+                          border: _isFollowing
+                              ? Border.all(color: AppTokens.lightPillBorder, width: 1.2)
+                              : null,
                           borderRadius: BorderRadius.circular(AppTokens.radiusButton),
                         ),
                         child: Text(
                           _isFollowing ? 'Following' : 'Follow',
                           style: TextStyle(
-                            color: _isFollowing ? primaryInk : onPrimaryInk,
-                            fontWeight: FontWeight.bold,
+                            color: _isFollowing ? Colors.black : Colors.white,
+                            fontWeight: FontWeight.w700,
                             fontSize: 13,
                           ),
                         ),
@@ -230,17 +245,18 @@ class _PinDetailModalState extends State<PinDetailModal> {
                 // Pin Title
                 Text(
                   _currentPin.title,
-                  style: theme.textTheme.headlineMedium?.copyWith(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 22,
-                    letterSpacing: -0.4,
+                    letterSpacing: -0.5,
                     height: 1.25,
+                    color: AppTokens.lightTextPrimary,
                   ),
                 ),
                 const SizedBox(height: AppTokens.space8),
                 Text(
                   'Saved to ${_currentPin.category} · Curated photos and visual ideas for your everyday moodboard.',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     height: 1.4,
                     color: AppTokens.lightTextSecondary,
@@ -251,7 +267,7 @@ class _PinDetailModalState extends State<PinDetailModal> {
                 // Save & View Buttons (Authentic Pinterest Button Colors)
                 Row(
                   children: [
-                    // View Button (Neutral Pill)
+                    // View Button (Crisp White Pill with Subtle Border - No Cheap Grey)
                     Expanded(
                       flex: 1,
                       child: InkWell(
@@ -268,16 +284,18 @@ class _PinDetailModalState extends State<PinDetailModal> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
-                            color: pillBg,
+                            color: Colors.white,
+                            border: Border.all(color: AppTokens.lightPillBorder, width: 1.5),
                             borderRadius: BorderRadius.circular(AppTokens.radiusButton),
                           ),
                           alignment: Alignment.center,
-                          child: Text(
+                          child: const Text(
                             'View',
                             style: TextStyle(
-                              color: primaryInk,
-                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w700,
                               fontSize: 15,
+                              letterSpacing: -0.2,
                             ),
                           ),
                         ),
@@ -285,7 +303,7 @@ class _PinDetailModalState extends State<PinDetailModal> {
                     ),
                     const SizedBox(width: AppTokens.space12),
 
-                    // Save Button (Iconic Pinterest Red Pill)
+                    // Save Button (Iconic Pinterest Red Pill & Checkmark when Saved)
                     Expanded(
                       flex: 1,
                       child: InkWell(
@@ -309,17 +327,32 @@ class _PinDetailModalState extends State<PinDetailModal> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
-                            color: _isSaved ? primaryInk : AppTokens.pinterestRed,
+                            color: _isSaved ? Colors.black : AppTokens.pinterestRed,
                             borderRadius: BorderRadius.circular(AppTokens.radiusButton),
                           ),
                           alignment: Alignment.center,
-                          child: Text(
-                            _isSaved ? 'Saved' : 'Save',
-                            style: TextStyle(
-                              color: _isSaved ? onPrimaryInk : Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_isSaved) ...[
+                                const Icon(
+                                  Icons.check_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              Text(
+                                _isSaved ? 'Saved' : 'Save',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -332,11 +365,13 @@ class _PinDetailModalState extends State<PinDetailModal> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'More like this',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
                         fontSize: 16,
+                        letterSpacing: -0.3,
+                        color: AppTokens.lightTextPrimary,
                       ),
                     ),
                     Text(
@@ -404,10 +439,15 @@ class _RelatedPinThumb extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppTokens.radiusPin),
           child: AspectRatio(
             aspectRatio: pin.aspectRatio,
-            child: Image.network(
-              pin.imageUrl,
+            child: CachedNetworkImage(
+              imageUrl: pin.imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Image.asset(
+              fadeInDuration: const Duration(milliseconds: 180),
+              fadeOutDuration: const Duration(milliseconds: 120),
+              placeholder: (_, __) => Container(
+                color: AppTokens.lightPill,
+              ),
+              errorWidget: (_, __, ___) => Image.asset(
                 pin.assetFallback,
                 fit: BoxFit.cover,
               ),

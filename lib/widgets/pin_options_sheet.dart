@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../data/pinterest_data.dart';
@@ -51,12 +52,17 @@ class PinOptionsSheet extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    pin.imageUrl,
+                  child: CachedNetworkImage(
+                    imageUrl: pin.imageUrl,
                     width: 44,
                     height: 44,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Image.asset(
+                    placeholder: (_, __) => Container(
+                      width: 44,
+                      height: 44,
+                      color: AppTokens.lightPill,
+                    ),
+                    errorWidget: (_, __, ___) => Image.asset(
                       pin.assetFallback,
                       width: 44,
                       height: 44,
@@ -73,12 +79,17 @@ class PinOptionsSheet extends StatelessWidget {
                         pin.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          letterSpacing: -0.2,
+                          color: AppTokens.lightTextPrimary,
+                        ),
                       ),
                       const SizedBox(height: 2),
-                       Text(
+                      Text(
                         pin.author,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
                           color: AppTokens.lightTextSecondary,
                         ),
@@ -172,19 +183,28 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isDestructive ? AppTokens.pinterestRed : Colors.black;
+    final primaryColor = isDestructive ? AppTokens.pinterestRed : AppTokens.lightTextPrimary;
+    final circleBg = isDestructive ? const Color(0xFFFEECEE) : const Color(0xFFF7F7F7);
 
     return InkWell(
       onTap: () {
         HapticFeedback.lightImpact();
         onTap();
       },
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppTokens.space12, horizontal: AppTokens.space4),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         child: Row(
           children: [
-            Icon(icon, size: 22, color: color),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: circleBg,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 20, color: primaryColor),
+            ),
             const SizedBox(width: AppTokens.space12),
             Expanded(
               child: Column(
@@ -193,9 +213,10 @@ class _ActionTile extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: color,
+                      letterSpacing: -0.2,
+                      color: primaryColor,
                     ),
                   ),
                   if (subtitle != null) ...[
@@ -204,7 +225,7 @@ class _ActionTile extends StatelessWidget {
                       subtitle!,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: AppTokens.lightTextTertiary,
+                        color: AppTokens.lightTextSecondary,
                       ),
                     ),
                   ],

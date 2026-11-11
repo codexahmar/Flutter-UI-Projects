@@ -59,8 +59,8 @@ class PinterestMasonrySkeleton extends StatelessWidget {
 
     return const ShimmerLoading(
       child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: AppTokens.space8),
+        physics: NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: AppTokens.space8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -74,7 +74,7 @@ class PinterestMasonrySkeleton extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: AppTokens.space8),
+            SizedBox(width: AppTokens.space8),
 
             // Right Skeleton Column
             Expanded(

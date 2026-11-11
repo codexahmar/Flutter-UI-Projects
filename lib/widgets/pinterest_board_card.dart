@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_assets.dart';
 import '../data/pinterest_data.dart';
@@ -11,8 +12,6 @@ class PinterestBoardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -29,11 +28,13 @@ class PinterestBoardCard extends StatelessWidget {
                 // Left Large Image
                 Expanded(
                   flex: 2,
-                  child: Image.network(
-                    board.mainImage,
+                  child: CachedNetworkImage(
+                    imageUrl: board.mainImage,
                     fit: BoxFit.cover,
                     height: double.infinity,
-                    errorBuilder: (_, __, ___) => Image.asset(
+                    fadeInDuration: const Duration(milliseconds: 180),
+                    placeholder: (_, __) => Container(color: AppTokens.lightPill),
+                    errorWidget: (_, __, ___) => Image.asset(
                       AppAssets.image5,
                       fit: BoxFit.cover,
                     ),
@@ -47,11 +48,13 @@ class PinterestBoardCard extends StatelessWidget {
                   child: Column(
                     children: [
                       Expanded(
-                        child: Image.network(
-                          board.subImage1,
+                        child: CachedNetworkImage(
+                          imageUrl: board.subImage1,
                           fit: BoxFit.cover,
                           width: double.infinity,
-                          errorBuilder: (_, __, ___) => Image.asset(
+                          fadeInDuration: const Duration(milliseconds: 180),
+                          placeholder: (_, __) => Container(color: AppTokens.lightPill),
+                          errorWidget: (_, __, ___) => Image.asset(
                             AppAssets.image1,
                             fit: BoxFit.cover,
                           ),
@@ -59,11 +62,13 @@ class PinterestBoardCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Expanded(
-                        child: Image.network(
-                          board.subImage2,
+                        child: CachedNetworkImage(
+                          imageUrl: board.subImage2,
                           fit: BoxFit.cover,
                           width: double.infinity,
-                          errorBuilder: (_, __, ___) => Image.asset(
+                          fadeInDuration: const Duration(milliseconds: 180),
+                          placeholder: (_, __) => Container(color: AppTokens.lightPill),
+                          errorWidget: (_, __, ___) => Image.asset(
                             AppAssets.image2,
                             fit: BoxFit.cover,
                           ),
@@ -86,9 +91,11 @@ class PinterestBoardCard extends StatelessWidget {
                 board.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
                   fontSize: 13,
+                  letterSpacing: -0.2,
+                  color: AppTokens.lightTextPrimary,
                 ),
               ),
             ),

@@ -84,19 +84,14 @@ class _PinterestSplashScreenState extends State<PinterestSplashScreen>
               ),
             );
           },
-          child: Container(
-            width: 84,
-            height: 84,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-            ),
-            child: ClipOval(
-              child: Image.asset(
-                AppAssets.pinterestLogo,
-                width: 84,
-                height: 84,
-                fit: BoxFit.cover,
-              ),
+          child: SizedBox(
+            width: 112,
+            height: 112,
+            child: Image.asset(
+              AppAssets.pinterestLogo,
+              width: 112,
+              height: 112,
+              fit: BoxFit.contain,
             ),
           ),
         ),

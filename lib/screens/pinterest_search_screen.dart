@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../data/pinterest_data.dart';
@@ -31,26 +32,37 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     final filteredPins = widget.pins.where((p) {
       if (_query.isEmpty) return true;
       final q = _query.toLowerCase();
-      return p.title.toLowerCase().contains(q) ||
-          p.category.toLowerCase().contains(q) ||
-          p.author.toLowerCase().contains(q);
+      final searchable = '${p.title} ${p.category} ${p.author}'.toLowerCase();
+      if (searchable.contains(q)) return true;
+      final words = q.split(RegExp(r'\s+')).where((w) => w.length > 2).toList();
+      if (words.isEmpty) return false;
+      return words.any((w) => searchable.contains(w));
     }).toList();
 
     return Column(
       children: [
-        // 1. Pinterest Iconic Search Bar
+        // 1. Pinterest Iconic Search Bar (Pure White)
         Padding(
           padding: const EdgeInsets.fromLTRB(AppTokens.space12, AppTokens.space8, AppTokens.space12, AppTokens.space8),
           child: Container(
             height: 48,
             decoration: BoxDecoration(
-              color: AppTokens.lightPill,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(AppTokens.radiusPill),
+              border: Border.all(
+                color: AppTokens.lightPillBorder,
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             padding: const EdgeInsets.symmetric(horizontal: AppTokens.space16),
             child: Row(
@@ -69,10 +81,10 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                         _query = val.trim();
                       });
                     },
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: theme.colorScheme.onSurface,
+                      color: AppTokens.lightTextPrimary,
                     ),
                     decoration: const InputDecoration(
                       hintText: 'Search for ideas…',
@@ -114,15 +126,19 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.search_off_rounded,
                             size: 48,
-                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                            color: AppTokens.lightTextTertiary,
                           ),
                           const SizedBox(height: AppTokens.space12),
                           Text(
                             'No pins found for "$_query"',
-                            style: theme.textTheme.bodyMedium,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppTokens.lightTextSecondary,
+                            ),
                           ),
                         ],
                       ),
@@ -145,11 +161,13 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(AppTokens.space16, AppTokens.space8, AppTokens.space16, 96),
                   children: [
-                    Text(
+                    const Text(
                       'Ideas for you',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
                         fontSize: 16,
+                        letterSpacing: -0.3,
+                        color: AppTokens.lightTextPrimary,
                       ),
                     ),
                     const SizedBox(height: AppTokens.space12),
@@ -181,10 +199,12 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                Image.network(
-                                  idea.imageUrl,
+                                CachedNetworkImage(
+                                  imageUrl: idea.imageUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Image.asset(
+                                  fadeInDuration: const Duration(milliseconds: 180),
+                                  placeholder: (_, __) => Container(color: AppTokens.lightPill),
+                                  errorWidget: (_, __, ___) => Image.asset(
                                     idea.assetFallback,
                                     fit: BoxFit.cover,
                                   ),
@@ -226,11 +246,13 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                     ),
                     const SizedBox(height: AppTokens.space24),
 
-                    Text(
+                    const Text(
                       'Popular on Pinterest',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
                         fontSize: 16,
+                        letterSpacing: -0.3,
+                        color: AppTokens.lightTextPrimary,
                       ),
                     ),
                     const SizedBox(height: AppTokens.space12),
@@ -252,7 +274,8 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                             decoration: BoxDecoration(
-                              color: AppTokens.lightPill,
+                              color: Colors.white,
+                              border: Border.all(color: AppTokens.lightPillBorder, width: 1.0),
                               borderRadius: BorderRadius.circular(AppTokens.radiusPill),
                             ),
                             child: Row(

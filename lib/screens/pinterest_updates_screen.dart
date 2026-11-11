@@ -7,8 +7,6 @@ class PinterestUpdatesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     final updates = [
       _UpdateItem(
         title: 'Studio Ark saved your pin to Architecture',
@@ -36,11 +34,13 @@ class PinterestUpdatesScreen extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(AppTokens.space16, AppTokens.space16, AppTokens.space16, 96),
       children: [
-        Text(
+        const Text(
           'Updates',
-          style: theme.textTheme.headlineMedium?.copyWith(
+          style: TextStyle(
             fontSize: 22,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.4,
+            color: AppTokens.lightTextPrimary,
           ),
         ),
         const SizedBox(height: AppTokens.space16),
@@ -65,10 +65,10 @@ class PinterestUpdatesScreen extends StatelessWidget {
                     children: [
                       Text(
                         u.title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.onSurface,
+                          color: AppTokens.lightTextPrimary,
                           height: 1.3,
                         ),
                       ),

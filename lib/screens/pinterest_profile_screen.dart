@@ -87,9 +87,13 @@ class _PinterestProfileScreenState extends State<PinterestProfileScreen> with Si
                     children: [
                       const Icon(Icons.tune_rounded, size: 20),
                       const SizedBox(width: 8),
-                      Text(
+                      const Text(
                         'Organize',
-                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppTokens.lightTextPrimary,
+                        ),
                       ),
                     ],
                   ),
@@ -136,9 +140,11 @@ class _PinterestProfileScreenState extends State<PinterestProfileScreen> with Si
               // All Pins Header
               Text(
                 'All pins (${savedPins.length})',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
                   fontSize: 16,
+                  letterSpacing: -0.3,
+                  color: AppTokens.lightTextPrimary,
                 ),
               ),
               const SizedBox(height: AppTokens.space12),

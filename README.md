@@ -1,6 +1,6 @@
 # Pinterest UI Clone
 
-A high-performance, pixel-accurate Pinterest mobile interface built with Flutter. Designed for smooth 60/120 FPS animations, responsive layout scaling, authentic staggered masonry grids, and seamless light/dark mode transitions.
+A high-performance, pixel-accurate Pinterest mobile interface built with Flutter. Designed for smooth 60/120 FPS animations, responsive layout scaling, authentic staggered masonry grids, and iconic Pinterest pure light mode aesthetic.
 
 ---
 
@@ -21,7 +21,7 @@ Key capabilities include:
 - Full pin inspection sheet with creator attribution, action controls, and recommendation grids.
 - Native shimmer skeleton placeholder on startup with index-staggered entrance animations.
 - Official Pinterest brand header, search screen with 2x2 visual category discovery, and notifications feed.
-- Creator profile with collage board previews, saved pin filters, and quick theme toggling.
+- Creator profile with collage board previews, saved pin filters, and authentic user controls.
 - Zero-dependency design architecture powered by centralized design tokens and asset registries.
 
 ---
@@ -44,7 +44,7 @@ lib/
 │   ├── pinterest_splash_screen.dart  # Official startup splash screen with scale-in brand logo
 │   └── pinterest_updates_screen.dart # Notifications and activity feed
 ├── themes/
-│   ├── app_themes.dart            # Material 3 light and dark theme configurations
+│   ├── app_themes.dart            # Material 3 light theme configuration
 │   └── design_tokens.dart         # Authentic Pinterest color palette, spacing, and radii
 └── widgets/
     ├── create_pin_modal.dart      # Bottom sheet modal for Pin, Board, or Collage creation
@@ -96,16 +96,13 @@ lib/
 The application strictly implements Pinterest's visual identity defined in `lib/themes/design_tokens.dart`:
 
 - **Primary Brand Color**: `#E60023` (Pinterest Red)
-- **Light Theme**:
-  - Background: `#FFFFFF`
-  - Pill / Card: `#E9E9E9`
-  - Text Primary: `#111111`
-  - Text Secondary: `#5F5F5F`
-- **Dark Theme**:
-  - Background: `#121212`
-  - Pill / Card: `#2B2B2B`
-  - Text Primary: `#FFFFFF`
-  - Text Secondary: `#B5B5B5`
+- **Light Theme Palette**:
+  - Background: `#FFFFFF` (Pure White)
+  - Pill / Card: `#E9E9E9` (Pinterest Neutral Gray)
+  - Subtle Border: `#E0E0E0`
+  - Text Primary: `#111111` (High-contrast charcoal)
+  - Text Secondary: `#5F5F5F` (Secondary captions)
+  - Text Tertiary: `#8E8E8E` (Subtle placeholders)
 - **Corner Radii**: 16px for cards and boards, 24px for action pills and search inputs.
 
 ---
@@ -142,7 +139,7 @@ flutter run
 
 ## Verification & Testing
 
-The project includes an end-to-end widget test suite verifying startup skeleton resolution, home feed rendering, pin detail opening, category recommendation browsing, search query filtering, bottom sheet flows, and profile theme toggling.
+The project includes an end-to-end widget test suite verifying startup skeleton resolution, home feed rendering, pin detail opening, category recommendation browsing, search query filtering, bottom sheet flows, and profile navigation.
 
 Run all tests via terminal:
 

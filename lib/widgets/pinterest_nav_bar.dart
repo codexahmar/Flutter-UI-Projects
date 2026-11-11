@@ -94,6 +94,7 @@ class PinterestNavBar extends StatelessWidget {
 
               // 5. Profile Tab (User Avatar)
               InkWell(
+                key: const ValueKey('profile_tab'),
                 onTap: () {
                   HapticFeedback.selectionClick();
                   onTap(4);

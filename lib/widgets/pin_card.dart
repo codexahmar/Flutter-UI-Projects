@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../data/pinterest_data.dart';
@@ -18,8 +19,6 @@ class PinCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTokens.space12),
       child: InkWell(
@@ -42,17 +41,22 @@ class PinCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    // Dynamic Network Image with Asset Fallback
-                    Image.network(
-                      pin.imageUrl,
+                    // Cached Network Image with Smooth Placeholder & Asset Fallback
+                    CachedNetworkImage(
+                      imageUrl: pin.imageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Image.asset(
+                      fadeInDuration: const Duration(milliseconds: 180),
+                      fadeOutDuration: const Duration(milliseconds: 120),
+                      placeholder: (_, __) => Container(
+                        color: AppTokens.lightPill,
+                      ),
+                      errorWidget: (_, __, ___) => Image.asset(
                         pin.assetFallback,
                         fit: BoxFit.cover,
                       ),
                     ),
 
-                    // Quick Save Button (Pinterest Red Pill)
+                    // Quick Save Button (Identical to Pinterest Official App)
                     Positioned(
                       top: 10,
                       right: 10,
@@ -64,7 +68,10 @@ class PinCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppTokens.radiusButton),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: pin.isSaved ? 10 : 14,
+                            vertical: 7,
+                          ),
                           decoration: BoxDecoration(
                             color: pin.isSaved
                                 ? Colors.black
@@ -72,19 +79,33 @@ class PinCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(AppTokens.radiusButton),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
+                                color: Colors.black.withValues(alpha: 0.22),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: Text(
-                            pin.isSaved ? 'Saved' : 'Save',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (pin.isSaved) ...[
+                                const Icon(
+                                  Icons.check_rounded,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 3),
+                              ],
+                              Text(
+                                pin.isSaved ? 'Saved' : 'Save',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -100,14 +121,23 @@ class PinCard extends StatelessWidget {
                         },
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
-                          padding: const EdgeInsets.all(5),
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.55),
+                            color: Colors.white.withValues(alpha: 0.92),
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                           ),
+                          alignment: Alignment.center,
                           child: const Icon(
                             Icons.more_horiz_rounded,
-                            color: Colors.white,
+                            color: Colors.black,
                             size: 16,
                           ),
                         ),
@@ -125,11 +155,12 @@ class PinCard extends StatelessWidget {
                 pin.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(
+                style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                   height: 1.25,
-                  color: theme.colorScheme.onSurface,
+                  letterSpacing: -0.1,
+                  color: AppTokens.lightTextPrimary,
                 ),
               ),
               const SizedBox(height: 4),
@@ -147,8 +178,9 @@ class PinCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       pin.author,
-                      style: theme.textTheme.bodySmall?.copyWith(
+                      style: const TextStyle(
                         fontSize: 11,
+                        fontWeight: FontWeight.w400,
                         color: AppTokens.lightTextSecondary,
                       ),
                       overflow: TextOverflow.ellipsis,
