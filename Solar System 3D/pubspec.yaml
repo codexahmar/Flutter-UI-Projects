@@ -1,0 +1,49 @@
+name: solaris_solar_system
+description: "Solaris: Interactive 3D Solar System & Planetary Encyclopedia"
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Cupertino & Native Icons
+  cupertino_icons: ^1.0.6
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # Globe Library
+  flutter_earth_globe: ^1.0.5
+  
+  # UI & Fonts
+  google_fonts: ^6.1.0
+  
+  # Utils
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/
+    - assets/2k_earth-day.jpg
+    - assets/2k_earth-night.jpg
+    - assets/2k_jupiter.jpg
+    - assets/2k_mars.jpg
+    - assets/2k_mercury.jpg
+    - assets/2k_moon.jpg
+    - assets/2k_neptune.jpg
+    - assets/2k_saturn.jpg
+    - assets/2k_stars.jpg
+    - assets/2k_sun.jpg
+    - assets/2k_uranus.jpg
+    - assets/2k_venus_surface.jpg
