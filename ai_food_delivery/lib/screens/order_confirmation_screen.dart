@@ -49,10 +49,11 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
   }
 
   void _placeOrder() {
-    Navigator.of(context).pushReplacement(
+    Navigator.of(context).pushReplacement<bool, bool>(
       MaterialPageRoute(
         builder: (_) => DeliveryTrackingScreen(food: widget.food),
       ),
+      result: true,
     );
   }
 

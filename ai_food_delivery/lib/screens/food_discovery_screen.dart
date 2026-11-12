@@ -80,12 +80,15 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
     }).toList();
   }
 
-  void _openCheckout(FoodItem food) {
-    Navigator.of(context).push(
+  Future<void> _openCheckout(FoodItem food) async {
+    final didPlaceOrder = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => OrderConfirmationScreen(food: food),
       ),
     );
+    if (didPlaceOrder == true && mounted) {
+      setState(() => _selectedFoodIndex = null);
+    }
   }
 
   void _toggleFoodSelection(int globalIndex) {

@@ -40,8 +40,11 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen>
       ..forward();
   }
 
+  static const double _pickupMoment = 0.28;
+  static const double _deliveredMoment = 0.97;
+
   void _handleRouteTick() {
-    if (_routeController.value >= 0.96 && !_didTriggerNotification) {
+    if (_routeController.value >= _deliveredMoment && !_didTriggerNotification) {
       _didTriggerNotification = true;
       if (!mounted) return;
       setState(() => _showDeliveredBanner = true);
@@ -63,10 +66,16 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen>
   }
 
   int _activeStepForProgress(double t) {
-    if (t >= 0.96) return 4;
-    if (t >= 0.25) return 3;
+    if (t >= _deliveredMoment) return 4;
+    if (t >= _pickupMoment) return 3;
     if (t >= 0.10) return 2;
     return 1;
+  }
+
+  double _routeProgressForTick(double t) {
+    if (t <= _pickupMoment) return 0.0;
+    return ((t - _pickupMoment) / (_deliveredMoment - _pickupMoment))
+        .clamp(0.0, 1.0);
   }
 
   @override
@@ -86,12 +95,13 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen>
           return AnimatedBuilder(
             animation: _routeController,
             builder: (context, _) {
-              final progress = _routeController.value;
-              final activeStep = _activeStepForProgress(progress);
-              final isDelivered = progress >= 0.96;
-              final etaMinutes = (14 * (1 - progress)).ceil().clamp(1, 14);
+              final tick = _routeController.value;
+              final routeProgress = _routeProgressForTick(tick);
+              final activeStep = _activeStepForProgress(tick);
+              final isDelivered = tick >= _deliveredMoment;
+              final etaMinutes = (14 * (1 - routeProgress)).ceil().clamp(1, 14);
 
-              final distance = (routeMetric.length * progress).clamp(
+              final distance = (routeMetric.length * routeProgress).clamp(
                 0.0,
                 routeMetric.length,
               );
@@ -106,7 +116,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen>
                   Positioned.fill(
                     child: CustomPaint(
                       painter: DeliveryMapPainter(
-                        progress: progress,
+                        progress: routeProgress,
                         restaurantName: widget.food.restaurant,
                       ),
                     ),
@@ -140,7 +150,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen>
                       angle: riderAngle,
                       child: DeliveryScooterMarker(
                         size: 54,
-                        isMoving: !isDelivered,
+                        isMoving: routeProgress > 0.0 && !isDelivered,
                       ),
                     ),
                   ),
