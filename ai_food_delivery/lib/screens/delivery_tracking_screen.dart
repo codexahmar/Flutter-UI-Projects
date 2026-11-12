@@ -150,6 +150,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen>
                       angle: riderAngle,
                       child: DeliveryScooterMarker(
                         size: 54,
+                        isWaiting: routeProgress == 0.0 && !isDelivered,
                         isMoving: routeProgress > 0.0 && !isDelivered,
                       ),
                     ),

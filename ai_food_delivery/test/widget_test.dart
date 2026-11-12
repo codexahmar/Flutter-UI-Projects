@@ -10,7 +10,7 @@ void main() {
   testWidgets('launches the discovery screen and renders Pakistani fast food', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const FoodDeliveryApp());
+    await tester.pumpWidget(const FoodDeliveryApp(showSplash: false));
     await tester.pump();
 
     expect(find.text('Fresh flavors, delivered fast'), findsOneWidget);
