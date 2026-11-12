@@ -1,0 +1,140 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:pinterest_ui_clone/main.dart';
+import 'package:pinterest_ui_clone/screens/pinterest_home_screen.dart';
+import 'package:pinterest_ui_clone/widgets/pin_detail_modal.dart';
+import 'package:pinterest_ui_clone/widgets/pinterest_icons.dart';
+import 'package:pinterest_ui_clone/widgets/pinterest_nav_bar.dart';
+
+void main() {
+  testWidgets('Pinterest clone full interaction and navigation flow', (WidgetTester tester) async {
+    // Smartphone viewport for reel/TikTok aspect ratio (iPhone 14/15 Pro)
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(const MyApp());
+    // Pump and settle to let initial shimmer skeleton resolve
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pumpAndSettle();
+
+    // 1. Home Feed Verification (Header Chat bubble distinct from Bottom Bar Bell, Hero cards, no Save buttons)
+    expect(find.text('Pinterest'), findsOneWidget);
+    expect(find.byTooltip('Create Pin'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(PinterestNavBar),
+        matching: find.byType(PinterestBellIcon),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(PinterestHomeScreen),
+        matching: find.byType(Hero),
+      ),
+      findsWidgets,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(PinterestHomeScreen),
+        matching: find.text('Save'),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(PinterestHomeScreen),
+        matching: find.text('Saved'),
+      ),
+      findsNothing,
+    );
+
+    // 2. Test Hero Pin Detail View with Same Category Recommendations
+    final pinFinder = find.text('Minimalist potted succulent on crisp white studio');
+    expect(pinFinder, findsOneWidget);
+    await tester.tap(pinFinder);
+    await tester.pumpAndSettle();
+
+    // Verify Pin Detail Modal Elements & Hero destination
+    expect(
+      find.descendant(
+        of: find.byType(PinDetailModal),
+        matching: find.byType(Hero),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Botanica'), findsWidgets);
+    expect(find.text('Follow'), findsOneWidget);
+    expect(find.text('View'), findsOneWidget);
+    expect(find.text('Save'), findsWidgets);
+    expect(find.text('More like this'), findsOneWidget);
+
+    // Close Pin Detail Modal
+    final closeBtn = find.byIcon(Icons.close_rounded);
+    expect(closeBtn, findsOneWidget);
+    await tester.tap(closeBtn);
+    await tester.pumpAndSettle();
+
+    // 3. Test Search Screen (Tab Index 1)
+    final searchTab = find.byTooltip('Search');
+    await tester.tap(searchTab);
+    await tester.pumpAndSettle();
+    expect(find.text('Search for ideas…'), findsOneWidget);
+    expect(find.text('Ideas for you'), findsOneWidget);
+    expect(find.text('Popular on Pinterest'), findsOneWidget);
+
+    // 4. Test Create Pin Modal (Tab Index 2)
+    final createTab = find.byTooltip('Create');
+    await tester.tap(createTab);
+    await tester.pumpAndSettle();
+    expect(find.text('Start creating now'), findsOneWidget);
+    expect(find.text('Pin'), findsOneWidget);
+    expect(find.text('Board'), findsOneWidget);
+
+    // Dismiss Create sheet
+    await tester.tapAt(const Offset(20, 20));
+    await tester.pumpAndSettle();
+
+    // 5. Test Updates Screen (Tab Index 3)
+    final updatesTab = find.byTooltip('Updates');
+    await tester.tap(updatesTab);
+    await tester.pumpAndSettle();
+    expect(find.text('Updates'), findsOneWidget);
+
+    // 6. Test Profile Screen (Tab Index 4 - User Avatar)
+    final profileTab = find.byKey(const ValueKey('profile_tab'));
+    await tester.tap(profileTab);
+    await tester.pumpAndSettle();
+
+    // Verify Ahmaryar khan Profile Screen
+    expect(find.text('Ahmaryar khan'), findsOneWidget);
+    expect(find.text('@codexahmar'), findsOneWidget);
+    expect(find.text('Software Engineer. I build cool stuff.'), findsOneWidget);
+    expect(find.text('Share'), findsOneWidget);
+    expect(find.text('Edit profile'), findsOneWidget);
+    expect(find.text('Saved'), findsOneWidget);
+    expect(find.text('Created'), findsOneWidget);
+    expect(find.text('Plants & Nature'), findsOneWidget);
+    expect(find.text('Minimal Botanicals'), findsOneWidget);
+
+    // 7. Return to Home Tab
+    final homeTab = find.byTooltip('Home');
+    await tester.tap(homeTab);
+    await tester.pumpAndSettle();
+    expect(find.text('Pinterest'), findsOneWidget);
+  });
+
+  testWidgets('PinterestSplashScreen renders centered logo on startup', (WidgetTester tester) async {
+    await tester.pumpWidget(const MyApp());
+    // On the first frame, splash screen is displayed with Pinterest circular logo
+    expect(find.byType(Image), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
+    // Resolves to home feed
+    expect(find.text('Pinterest'), findsOneWidget);
+  });
+}
