@@ -18,29 +18,14 @@ abstract final class OnboardingRadius {
 }
 
 abstract final class OnboardingColors {
-  static const textPrimary = Color(0xFFF4F7FB);
-  static const textSecondary = Color(0xFF9EABC0);
-  static const inkOnAccent = Color(0xFF061019);
-  static const hairline = Color(0x26FFFFFF);
-  static const sheetSurface = Color(0xFF141824);
-  static const sheetSurfaceSubtle = Color(0xFF1C2233);
-  static const sheetBorder = Color(0xFF2B344A);
-}
-
-class OnboardingPalette {
-  final Color canvas;
-  final Color surface;
-  final Color border;
-  final Color accent;
-  final Color secondaryText;
-
-  const OnboardingPalette({
-    required this.canvas,
-    required this.surface,
-    required this.border,
-    required this.accent,
-    required this.secondaryText,
-  });
+  static const baseCanvas = Color(0xFF0B0D12);
+  static const textPrimary = Color(0xFFF3F5F8);
+  static const textSecondary = Color(0xFF9AA3B2);
+  static const inkOnAccent = Color(0xFF060B12);
+  static const ringTrack = Color(0x24FFFFFF);
+  static const sheetSurface = Color(0xFF131620);
+  static const sheetSurfaceSubtle = Color(0xFF1B202E);
+  static const sheetBorder = Color(0xFF283044);
 }
 
 abstract final class OnboardingText {
@@ -48,15 +33,15 @@ abstract final class OnboardingText {
     color: OnboardingColors.textPrimary,
     fontSize: 28,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.7,
-    height: 1.14,
+    letterSpacing: -0.8,
+    height: 1.12,
   );
 
   static const title = TextStyle(
     color: OnboardingColors.textPrimary,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.3,
+    letterSpacing: -0.25,
     height: 1.25,
   );
 
@@ -71,7 +56,7 @@ abstract final class OnboardingText {
   static const button = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.1,
+    letterSpacing: -0.15,
     height: 1.2,
   );
 
@@ -87,10 +72,10 @@ abstract final class OnboardingText {
 
 abstract final class OnboardingTheme {
   static ThemeData dark() {
-    final baseTheme = ThemeData(
+    return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: OnboardingColors.sheetSurface,
+      scaffoldBackgroundColor: OnboardingColors.baseCanvas,
       colorScheme: const ColorScheme.dark(
         primary: OnboardingColors.textPrimary,
         onPrimary: OnboardingColors.inkOnAccent,
@@ -98,7 +83,7 @@ abstract final class OnboardingTheme {
         onSurface: OnboardingColors.textPrimary,
         outline: OnboardingColors.sheetBorder,
       ),
-      textTheme: GoogleFonts.interTextTheme(
+      textTheme: GoogleFonts.plusJakartaSansTextTheme(
         const TextTheme(
           headlineMedium: OnboardingText.headline,
           titleMedium: OnboardingText.title,
@@ -108,8 +93,6 @@ abstract final class OnboardingTheme {
         ),
       ),
     );
-
-    return baseTheme;
   }
 }
 

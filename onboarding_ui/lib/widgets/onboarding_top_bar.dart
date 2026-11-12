@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:onboarding_ui/app_theme.dart';
+import 'package:onboarding_ui/models/onboarding_slide.dart';
+import 'package:onboarding_ui/theme/app_theme.dart';
 
-/// Persistent top navigation chrome showing the app mark and Skip action.
+/// Top bar with geometric brand mark and quiet Skip action.
 class OnboardingTopBar extends StatelessWidget {
-  final OnboardingPalette palette;
+  final SlidePalette palette;
   final bool showSkip;
   final VoidCallback onSkip;
 
@@ -23,28 +24,21 @@ class OnboardingTopBar extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              width: 32,
-              height: 32,
+            Container(
+              width: 30,
+              height: 30,
               decoration: BoxDecoration(
                 color: palette.accent,
-                borderRadius: BorderRadius.circular(OnboardingRadius.sm),
+                borderRadius: BorderRadius.circular(OnboardingRadius.sm - 2),
               ),
               child: const Icon(
-                Icons.grid_view_rounded,
+                Icons.layers_rounded,
                 color: OnboardingColors.inkOnAccent,
-                size: 18,
+                size: 17,
               ),
             ),
             const SizedBox(width: OnboardingSpacing.sm),
-            Text(
-              'UIForge AI',
-              style: textTheme.titleMedium?.copyWith(
-                fontSize: 16,
-                letterSpacing: -0.3,
-              ),
-            ),
+            Text('UIForge AI', style: textTheme.titleMedium),
           ],
         ),
         const Spacer(),
@@ -56,16 +50,20 @@ class OnboardingTopBar extends StatelessWidget {
             child: TextButton(
               onPressed: onSkip,
               style: TextButton.styleFrom(
-                foregroundColor: OnboardingColors.textPrimary,
-                backgroundColor: palette.surface,
+                foregroundColor: OnboardingColors.textSecondary,
                 minimumSize: const Size(0, 48),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: OnboardingSpacing.lg,
+                  horizontal: OnboardingSpacing.md,
                 ),
                 shape: const StadiumBorder(),
-                side: BorderSide(color: palette.border),
               ),
-              child: Text('Skip', style: textTheme.labelLarge),
+              child: Text(
+                'Skip',
+                style: textTheme.labelLarge?.copyWith(
+                  color: OnboardingColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ),
         ),
@@ -73,4 +71,3 @@ class OnboardingTopBar extends StatelessWidget {
     );
   }
 }
-

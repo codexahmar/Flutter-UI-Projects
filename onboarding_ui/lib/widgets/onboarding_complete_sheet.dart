@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:onboarding_ui/app_theme.dart';
+import 'package:onboarding_ui/theme/app_theme.dart';
 
-/// Confirmation sheet presented when the user completes onboarding.
+/// Confirmation sheet shown when the user completes onboarding.
 class OnboardingCompleteSheet extends StatelessWidget {
   final Color accentColor;
   final VoidCallback onReplay;
@@ -70,7 +70,7 @@ class OnboardingCompleteSheet extends StatelessWidget {
           Text('Workspace ready', style: textTheme.headlineMedium),
           const SizedBox(height: OnboardingSpacing.sm),
           Text(
-            'You are set to draft screens, define tokens, and preview Flutter layouts.',
+            'You are set to draft screens, define tokens, and export Flutter layouts.',
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: OnboardingSpacing.xl),
@@ -117,4 +117,3 @@ class OnboardingCompleteSheet extends StatelessWidget {
     );
   }
 }
-
