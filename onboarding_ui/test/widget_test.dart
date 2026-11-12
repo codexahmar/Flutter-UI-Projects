@@ -1,30 +1,55 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 import 'package:onboarding_ui/main.dart';
+import 'package:onboarding_ui/onboarding_slides.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+
+  testWidgets('Onboarding renders initial slide and supports Next navigation', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const UIForgeApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('UIForge AI'), findsOneWidget);
+    expect(find.text(kOnboardingSlides[0].title), findsOneWidget);
+    expect(find.text('Step 1 of 4'), findsOneWidget);
+    expect(find.text('Skip'), findsOneWidget);
+    expect(find.text('Next'), findsOneWidget);
+
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(kOnboardingSlides[1].title), findsOneWidget);
+    expect(find.text('Step 2 of 4'), findsOneWidget);
+  });
+
+  testWidgets('Skip jumps to final slide and opens completion sheet', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const UIForgeApp());
+    await tester.pump();
+
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(kOnboardingSlides.last.title), findsOneWidget);
+    expect(find.text('Step 4 of 4'), findsOneWidget);
+    expect(find.text('Start building'), findsOneWidget);
+
+    await tester.tap(find.text('Start building'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Workspace ready'), findsOneWidget);
+    expect(find.text('Replay tour'), findsOneWidget);
+
+    await tester.tap(find.text('Replay tour'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(kOnboardingSlides[0].title), findsOneWidget);
+    expect(find.text('Step 1 of 4'), findsOneWidget);
   });
 }
