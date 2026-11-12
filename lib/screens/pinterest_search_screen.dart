@@ -1,10 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../data/pinterest_data.dart';
 import '../themes/design_tokens.dart';
+import '../widgets/cached_pin_image.dart';
 import '../widgets/masonry_grid.dart';
 import '../widgets/pin_detail_modal.dart';
+import '../widgets/pinterest_icons.dart';
 
 class PinterestSearchScreen extends StatefulWidget {
   final List<PinItem> pins;
@@ -30,8 +31,18 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
     super.dispose();
   }
 
+  void _applyQuery(String value) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _controller.text = value;
+      _query = value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     final filteredPins = widget.pins.where((p) {
       if (_query.isEmpty) return true;
       final q = _query.toLowerCase();
@@ -44,51 +55,44 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
 
     return Column(
       children: [
-        // 1. Pinterest Iconic Search Bar (Pure White)
+        // 1. Crisp White Pinterest Search Bar
         Padding(
-          padding: const EdgeInsets.fromLTRB(AppTokens.space12, AppTokens.space8, AppTokens.space12, AppTokens.space8),
+          padding: const EdgeInsets.fromLTRB(
+            AppTokens.space12,
+            AppTokens.space8,
+            AppTokens.space12,
+            AppTokens.space8,
+          ),
           child: Container(
-            height: 48,
+            constraints: const BoxConstraints(minHeight: 48),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTokens.lightBg,
               borderRadius: BorderRadius.circular(AppTokens.radiusPill),
               border: Border.all(
                 color: AppTokens.lightPillBorder,
-                width: 1.2,
+                width: 1,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              boxShadow: AppTokens.shadowBar,
             ),
             padding: const EdgeInsets.symmetric(horizontal: AppTokens.space16),
             child: Row(
               children: [
-                const Icon(
-                  Icons.search_rounded,
-                  size: 22,
+                const PinterestSearchIcon(
+                  size: 20,
                   color: AppTokens.lightTextSecondary,
                 ),
                 const SizedBox(width: AppTokens.space12),
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    onChanged: (val) {
-                      setState(() {
-                        _query = val.trim();
-                      });
-                    },
-                    style: const TextStyle(
+                    onChanged: (val) => setState(() => _query = val.trim()),
+                    style: textTheme.bodyLarge?.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: AppTokens.lightTextPrimary,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Search for ideas…',
-                      hintStyle: TextStyle(
+                      hintStyle: textTheme.bodyMedium?.copyWith(
                         fontSize: 14,
                         color: AppTokens.lightTextTertiary,
                       ),
@@ -99,58 +103,100 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                 ),
                 if (_query.isNotEmpty)
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 18),
+                    tooltip: 'Clear search',
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: AppTokens.lightTextSecondary,
+                    ),
                     onPressed: () {
                       _controller.clear();
-                      setState(() {
-                        _query = '';
-                      });
+                      setState(() => _query = '');
                     },
                   )
                 else
-                  const Icon(
-                    Icons.camera_alt_outlined,
-                    size: 20,
-                    color: AppTokens.lightTextSecondary,
+                  IconButton(
+                    tooltip: 'Visual search',
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(
+                      Icons.camera_alt_outlined,
+                      size: 20,
+                      color: AppTokens.lightTextSecondary,
+                    ),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Pinterest Lens visual search'),
+                          duration: Duration(milliseconds: 1000),
+                        ),
+                      );
+                    },
                   ),
               ],
             ),
           ),
         ),
 
-        // 2. Body: Either "Ideas For You" or Search Results
+        // 2. Body: "Ideas for you" Explore Grid OR Search Results
         Expanded(
           child: _query.isNotEmpty
               ? (filteredPins.isEmpty
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.search_off_rounded,
-                            size: 48,
-                            color: AppTokens.lightTextTertiary,
-                          ),
-                          const SizedBox(height: AppTokens.space12),
-                          Text(
-                            'No pins found for "$_query"',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppTokens.lightTextSecondary,
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppTokens.space32),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const PinterestSearchIcon(
+                              size: 40,
+                              color: AppTokens.lightTextTertiary,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: AppTokens.space12),
+                            Text(
+                              'No pins found for "$_query"',
+                              textAlign: TextAlign.center,
+                              style: textTheme.titleSmall?.copyWith(
+                                color: AppTokens.lightTextSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: AppTokens.space16),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+                              onTap: () {
+                                _controller.clear();
+                                setState(() => _query = '');
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppTokens.space20,
+                                  vertical: AppTokens.space12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTokens.lightPill,
+                                  borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+                                ),
+                                child: Text(
+                                  'Clear search',
+                                  style: textTheme.labelLarge,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   : PinterestMasonryGrid(
                       pins: filteredPins,
                       enableAnimation: false,
+                      heroTagPrefix: 'search',
                       onPinTap: (pin) => PinDetailModal.show(
                         context,
                         pin: pin,
                         allPins: widget.pins,
                         onToggleSave: widget.onToggleSave,
+                        heroTagPrefix: 'search',
                       ),
                       onToggleSave: (pin) {
                         pin.isSaved = !pin.isSaved;
@@ -159,86 +205,76 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                     ))
               : ListView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(AppTokens.space16, AppTokens.space8, AppTokens.space16, 96),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppTokens.space16,
+                    AppTokens.space8,
+                    AppTokens.space16,
+                    AppTokens.space24,
+                  ),
                   children: [
-                    const Text(
+                    Text(
                       'Ideas for you',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        letterSpacing: -0.3,
-                        color: AppTokens.lightTextPrimary,
-                      ),
+                      style: textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppTokens.space12),
 
-                    // 2x2 Visual Category Cards
+                    // 2x2 Visual Category Cards with bottom-up legibility scrim (#36)
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
+                        crossAxisSpacing: AppTokens.space12,
+                        mainAxisSpacing: AppTokens.space12,
                         childAspectRatio: 1.35,
                       ),
                       itemCount: PinterestData.ideasForYou.length,
                       itemBuilder: (context, index) {
                         final idea = PinterestData.ideasForYou[index];
                         return InkWell(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            setState(() {
-                              _controller.text = idea.title;
-                              _query = idea.title;
-                            });
-                          },
+                          onTap: () => _applyQuery(idea.title),
                           borderRadius: BorderRadius.circular(AppTokens.radiusPin),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(AppTokens.radiusPin),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                CachedNetworkImage(
-                                  imageUrl: idea.imageUrl,
-                                  fit: BoxFit.cover,
-                                  fadeInDuration: const Duration(milliseconds: 180),
-                                  placeholder: (_, __) => Container(color: AppTokens.lightPill),
-                                  errorWidget: (_, __, ___) => Image.asset(
-                                    idea.assetFallback,
-                                    fit: BoxFit.cover,
+                          child: CachedPinImage(
+                            imageUrl: idea.imageUrl,
+                            assetFallback: idea.assetFallback,
+                            overlay: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  stops: [0.0, 0.45, 1.0],
+                                  colors: [
+                                    AppTokens.imageScrimTop,
+                                    AppTokens.imageScrimMid,
+                                    AppTokens.imageScrimBottom,
+                                  ],
+                                ),
+                              ),
+                              padding: const EdgeInsets.all(AppTokens.space12),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    idea.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: textTheme.titleSmall?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                ),
-                                Container(
-                                  color: Colors.black.withValues(alpha: 0.42),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(AppTokens.space12),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        idea.title,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Text(
-                                        idea.subtitle,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.8),
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ],
+                                  const SizedBox(height: AppTokens.space2),
+                                  Text(
+                                    idea.subtitle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: textTheme.labelSmall?.copyWith(
+                                      color: Colors.white.withValues(alpha: 0.92),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         );
@@ -246,47 +282,48 @@ class _PinterestSearchScreenState extends State<PinterestSearchScreen> {
                     ),
                     const SizedBox(height: AppTokens.space24),
 
-                    const Text(
+                    Text(
                       'Popular on Pinterest',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        letterSpacing: -0.3,
-                        color: AppTokens.lightTextPrimary,
-                      ),
+                      style: textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppTokens.space12),
 
-                    // Trending search query pills
+                    // Trending Search Query Pills
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: AppTokens.space8,
+                      runSpacing: AppTokens.space8,
                       children: PinterestData.trendingSearches.map((term) {
                         return InkWell(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            setState(() {
-                              _controller.text = term;
-                              _query = term;
-                            });
-                          },
+                          onTap: () => _applyQuery(term),
                           borderRadius: BorderRadius.circular(AppTokens.radiusPill),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppTokens.space16,
+                              vertical: AppTokens.space8,
+                            ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: AppTokens.lightPillBorder, width: 1.0),
+                              color: AppTokens.lightBg,
+                              border: Border.all(
+                                color: AppTokens.lightPillBorder,
+                                width: 1,
+                              ),
                               borderRadius: BorderRadius.circular(AppTokens.radiusPill),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.search_rounded, size: 14),
-                                const SizedBox(width: 6),
+                                const PinterestSearchIcon(
+                                  size: 14,
+                                  color: AppTokens.lightTextSecondary,
+                                ),
+                                const SizedBox(width: AppTokens.space8),
                                 Flexible(
                                   child: Text(
                                     term,
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: AppTokens.lightTextPrimary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants/app_assets.dart';
 import '../themes/design_tokens.dart';
+import 'pinterest_icons.dart';
 
 /// Official Pinterest Logo (Image Asset)
 class PinterestLogo extends StatelessWidget {
@@ -21,7 +23,7 @@ class PinterestLogo extends StatelessWidget {
   }
 }
 
-/// Official Pinterest Home Header Bar (Left: Logo + "Pinterest", Right: "+" and Chat with red dot)
+/// Official Pinterest Home Header Bar (Left: Logo + "Pinterest", Right: "+" and Inbox with unread dot)
 class PinterestOfficialHeader extends StatelessWidget {
   final VoidCallback onCreateTap;
   final VoidCallback onChatTap;
@@ -34,75 +36,99 @@ class PinterestOfficialHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppTokens.space16, AppTokens.space8, AppTokens.space16, AppTokens.space4),
+      padding: const EdgeInsets.fromLTRB(
+        AppTokens.space16,
+        AppTokens.space8,
+        AppTokens.space12,
+        AppTokens.space8,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Left: Official Logo + Pinterest text
-          const Row(
+          // Left: Official Logo + Pinterest wordmark
+          Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              PinterestLogo(size: 32),
-              SizedBox(width: AppTokens.space8),
+              const PinterestLogo(size: 28),
+              const SizedBox(width: AppTokens.space8),
               Text(
                 'Pinterest',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.6,
+                style: textTheme.titleLarge?.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  color: AppTokens.lightTextPrimary,
                 ),
               ),
             ],
           ),
 
-          // Right: Plus (+) icon and Chat icon with red dot
+          // Right: Uniform-stroke Create (+) and Updates/Inbox actions (44px tap targets)
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Plus Icon
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(
-                  Icons.add_rounded,
-                  size: 28,
-                  color: Colors.black,
+              Tooltip(
+                message: 'Create Pin',
+                child: TactileScaleTap(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onCreateTap();
+                  },
+                  child: const SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Center(
+                      child: PinterestCreateIcon(
+                        color: AppTokens.lightTextPrimary,
+                        size: 23,
+                        strokeWidth: 2.0,
+                      ),
+                    ),
+                  ),
                 ),
-                tooltip: 'Create Pin',
-                onPressed: onCreateTap,
               ),
-              const SizedBox(width: 4),
-
-              // Chat Icon with Red Notification Dot Badge
-              InkWell(
-                onTap: onChatTap,
-                borderRadius: BorderRadius.circular(20),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Icon(
-                        Icons.chat_outlined,
-                        size: 24,
-                        color: Colors.black,
-                      ),
-                      // Red notification dot
-                      Positioned(
-                        top: -2,
-                        right: -2,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppTokens.pinterestRed,
-                            shape: BoxShape.circle,
+              Tooltip(
+                message: 'Inbox & updates',
+                child: TactileScaleTap(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onChatTap();
+                  },
+                  child: SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Center(
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const PinterestInboxIcon(
+                            active: false,
+                            color: AppTokens.lightTextPrimary,
+                            size: 23,
                           ),
-                        ),
+                          Positioned(
+                            top: -1,
+                            right: -2,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: AppTokens.pinterestRed,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppTokens.lightBg,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -113,4 +139,3 @@ class PinterestOfficialHeader extends StatelessWidget {
     );
   }
 }
-

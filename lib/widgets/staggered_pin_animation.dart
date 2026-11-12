@@ -1,79 +1,57 @@
 import 'package:flutter/material.dart';
 
-class StaggeredPinAnimation extends StatefulWidget {
+/// Synchronized card reveal driven by a shared grid Animation<double>.
+class StaggeredPinAnimation extends StatelessWidget {
   final int index;
+  final Animation<double> progress;
   final Widget child;
 
   const StaggeredPinAnimation({
     super.key,
     required this.index,
+    required this.progress,
     required this.child,
   });
 
   @override
-  State<StaggeredPinAnimation> createState() => _StaggeredPinAnimationState();
-}
+  Widget build(BuildContext context) {
+    // Cascade across the first 4 masonry rows cleanly, while items below finish
+    // within the same ~600ms wave so scrolled content is immediately ready.
+    final clampedIndex = index.clamp(0, 7);
+    final start = clampedIndex * 0.055;
+    final fadeEnd = (start + 0.36).clamp(0.0, 1.0);
+    final motionEnd = (start + 0.56).clamp(0.0, 1.0);
+    const motionCurve = Cubic(0.22, 1.0, 0.36, 1.0);
 
-class _StaggeredPinAnimationState extends State<StaggeredPinAnimation>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _slide;
-  late Animation<double> _scale;
-  late Animation<double> _fade;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 450),
+    final opacity = CurvedAnimation(
+      parent: progress,
+      curve: Interval(start, fadeEnd, curve: Curves.easeOut),
+    );
+    final slide = Tween<Offset>(
+      begin: const Offset(0, 0.045),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: progress,
+        curve: Interval(start, motionEnd, curve: motionCurve),
+      ),
+    );
+    final scale = Tween<double>(begin: 0.96, end: 1.0).animate(
+      CurvedAnimation(
+        parent: progress,
+        curve: Interval(start, motionEnd, curve: motionCurve),
+      ),
     );
 
-    _slide = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
-
-    _scale = Tween<double>(begin: 0.92, end: 1.0).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
-
-    _fade = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
-
-    // Stagger entrance one-by-one with crisp delay per item index
-    final delayMs = (widget.index * 55).clamp(0, 450);
-    Future.delayed(Duration(milliseconds: delayMs), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return FadeTransition(
-      opacity: _fade,
+      opacity: opacity,
       child: SlideTransition(
-        position: _slide,
+        position: slide,
         child: ScaleTransition(
-          scale: _scale,
-          child: widget.child,
+          scale: scale,
+          child: child,
         ),
       ),
     );
   }
 }
-

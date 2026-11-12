@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../themes/design_tokens.dart';
 
-/// Lightweight, native Flutter shimmer effect (Zero external packages needed)
+/// Lightweight native shimmer pulse for initial feed loading.
 class ShimmerLoading extends StatefulWidget {
   final Widget child;
 
@@ -24,7 +24,7 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
 
-    _animation = Tween<double>(begin: 0.35, end: 0.85).animate(
+    _animation = Tween<double>(begin: 0.45, end: 0.95).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
@@ -49,14 +49,12 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
   }
 }
 
-/// The Pinterest Masonry Skeleton Feed shown on startup
+/// Masonry loading placeholder aligned pixel-for-pixel with PinterestMasonryGrid.
 class PinterestMasonrySkeleton extends StatelessWidget {
   const PinterestMasonrySkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const baseColor = AppTokens.lightPill;
-
     return const ShimmerLoading(
       child: SingleChildScrollView(
         physics: NeverScrollableScrollPhysics(),
@@ -64,25 +62,22 @@ class PinterestMasonrySkeleton extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Left Skeleton Column
             Expanded(
               child: Column(
                 children: [
-                  _SkeletonPin(height: 200, color: baseColor),
-                  _SkeletonPin(height: 150, color: baseColor),
-                  _SkeletonPin(height: 220, color: baseColor),
+                  _SkeletonPin(aspectRatio: 0.84),
+                  _SkeletonPin(aspectRatio: 0.72),
+                  _SkeletonPin(aspectRatio: 0.88),
                 ],
               ),
             ),
             SizedBox(width: AppTokens.space8),
-
-            // Right Skeleton Column
             Expanded(
               child: Column(
                 children: [
-                  _SkeletonPin(height: 160, color: baseColor),
-                  _SkeletonPin(height: 220, color: baseColor),
-                  _SkeletonPin(height: 170, color: baseColor),
+                  _SkeletonPin(aspectRatio: 0.75),
+                  _SkeletonPin(aspectRatio: 0.86),
+                  _SkeletonPin(aspectRatio: 0.70),
                 ],
               ),
             ),
@@ -94,42 +89,42 @@ class PinterestMasonrySkeleton extends StatelessWidget {
 }
 
 class _SkeletonPin extends StatelessWidget {
-  final double height;
-  final Color color;
+  final double aspectRatio;
 
-  const _SkeletonPin({required this.height, required this.color});
+  const _SkeletonPin({required this.aspectRatio});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppTokens.space12),
+      padding: const EdgeInsets.only(bottom: AppTokens.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: height,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(AppTokens.radiusPin),
+          AspectRatio(
+            aspectRatio: aspectRatio,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTokens.lightSurfaceSubtle,
+                borderRadius: BorderRadius.circular(AppTokens.radiusPin),
+              ),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppTokens.space8),
           Container(
             height: 12,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(6),
+              color: AppTokens.lightSurfaceSubtle,
+              borderRadius: BorderRadius.circular(AppTokens.space8),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppTokens.space4),
           Container(
-            height: 10,
-            width: 80,
+            height: 12,
+            width: 96,
             decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(5),
+              color: AppTokens.lightSurfaceSubtle,
+              borderRadius: BorderRadius.circular(AppTokens.space8),
             ),
           ),
         ],

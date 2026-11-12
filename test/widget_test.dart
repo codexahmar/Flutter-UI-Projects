@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pinterest_ui_clone/main.dart';
+import 'package:pinterest_ui_clone/screens/pinterest_home_screen.dart';
+import 'package:pinterest_ui_clone/widgets/pin_detail_modal.dart';
+import 'package:pinterest_ui_clone/widgets/pinterest_icons.dart';
+import 'package:pinterest_ui_clone/widgets/pinterest_nav_bar.dart';
 
 void main() {
   testWidgets('Pinterest clone full interaction and navigation flow', (WidgetTester tester) async {
@@ -17,18 +21,53 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
 
-    // 1. Home Feed Verification (Pinterest Official Header + Brand)
+    // 1. Home Feed Verification (Header Chat bubble distinct from Bottom Bar Bell, Hero cards, no Save buttons)
     expect(find.text('Pinterest'), findsOneWidget);
     expect(find.byTooltip('Create Pin'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(PinterestNavBar),
+        matching: find.byType(PinterestBellIcon),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(PinterestHomeScreen),
+        matching: find.byType(Hero),
+      ),
+      findsWidgets,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(PinterestHomeScreen),
+        matching: find.text('Save'),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(PinterestHomeScreen),
+        matching: find.text('Saved'),
+      ),
+      findsNothing,
+    );
 
-    // 2. Test Pin Detail View with Same Category Recommendations
-    final pinFinder = find.text('Clean dark mode Flutter IDE coding workspace');
+    // 2. Test Hero Pin Detail View with Same Category Recommendations
+    final pinFinder = find.text('Minimalist potted succulent on crisp white studio');
     expect(pinFinder, findsOneWidget);
     await tester.tap(pinFinder);
     await tester.pumpAndSettle();
 
-    // Verify Pin Detail Modal Elements
-    expect(find.text('CodeForge'), findsWidgets);
+    // Verify Pin Detail Modal Elements & Hero destination
+    expect(
+      find.descendant(
+        of: find.byType(PinDetailModal),
+        matching: find.byType(Hero),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Botanica'), findsWidgets);
     expect(find.text('Follow'), findsOneWidget);
     expect(find.text('View'), findsOneWidget);
     expect(find.text('Save'), findsWidgets);
@@ -79,8 +118,8 @@ void main() {
     expect(find.text('Edit profile'), findsOneWidget);
     expect(find.text('Saved'), findsOneWidget);
     expect(find.text('Created'), findsOneWidget);
-    expect(find.text('Coding & Setups'), findsOneWidget);
-    expect(find.text('Cute DPs & Avatars'), findsOneWidget);
+    expect(find.text('Plants & Nature'), findsOneWidget);
+    expect(find.text('Minimal Botanicals'), findsOneWidget);
 
     // 7. Return to Home Tab
     final homeTab = find.byTooltip('Home');

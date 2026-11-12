@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/app_assets.dart';
 import '../themes/design_tokens.dart';
+import 'pinterest_icons.dart';
 
 class PinterestNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -16,97 +17,83 @@ class PinterestNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const activeColor = Colors.black;
+    const activeColor = AppTokens.lightTextPrimary;
     const inactiveColor = AppTokens.lightTextTertiary;
 
     return Container(
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
-        border: Border(
+        boxShadow: AppTokens.shadowChrome,
+        border: const Border(
           top: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: 0.3),
-            width: 0.5,
+            color: AppTokens.lightBorder,
+            width: 0.6,
           ),
         ),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 56,
+          height: 54,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               // 1. Home Tab
-              IconButton(
-                icon: Icon(
-                  selectedIndex == 0 ? Icons.home_filled : Icons.home_outlined,
-                  size: 28,
-                  color: selectedIndex == 0 ? activeColor : inactiveColor,
-                ),
+              _NavItem(
                 tooltip: 'Home',
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  onTap(0);
-                },
+                onTap: () => onTap(0),
+                child: PinterestHomeIcon(
+                  active: selectedIndex == 0,
+                  color: selectedIndex == 0 ? activeColor : inactiveColor,
+                  size: 24,
+                ),
               ),
 
               // 2. Search Tab
-              IconButton(
-                icon: Icon(
-                  Icons.search_rounded,
-                  size: 28,
-                  color: selectedIndex == 1 ? activeColor : inactiveColor,
-                ),
+              _NavItem(
                 tooltip: 'Search',
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  onTap(1);
-                },
+                onTap: () => onTap(1),
+                child: PinterestSearchIcon(
+                  active: selectedIndex == 1,
+                  color: selectedIndex == 1 ? activeColor : inactiveColor,
+                  size: 24,
+                ),
               ),
 
               // 3. Create Pin Action
-              IconButton(
-                icon: Icon(
-                  Icons.add_rounded,
-                  size: 32,
-                  color: selectedIndex == 2 ? activeColor : inactiveColor,
-                ),
+              _NavItem(
                 tooltip: 'Create',
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  onTap(2);
-                },
-              ),
-
-              // 4. Updates / Inbox Tab
-              IconButton(
-                icon: Icon(
-                  selectedIndex == 3 ? Icons.chat_bubble_rounded : Icons.chat_bubble_outline_rounded,
-                  size: 26,
-                  color: selectedIndex == 3 ? activeColor : inactiveColor,
+                onTap: () => onTap(2),
+                child: PinterestCreateIcon(
+                  color: selectedIndex == 2 ? activeColor : inactiveColor,
+                  size: 25,
+                  strokeWidth: 2.15,
                 ),
-                tooltip: 'Updates',
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  onTap(3);
-                },
               ),
 
-              // 5. Profile Tab (User Avatar)
-              InkWell(
-                key: const ValueKey('profile_tab'),
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  onTap(4);
-                },
-                borderRadius: BorderRadius.circular(16),
+              // 4. Updates Tab (Distinct from top header Chat bubble)
+              _NavItem(
+                tooltip: 'Updates',
+                onTap: () => onTap(3),
+                child: PinterestBellIcon(
+                  active: selectedIndex == 3,
+                  color: selectedIndex == 3 ? activeColor : inactiveColor,
+                  size: 24,
+                ),
+              ),
+
+              // 5. Profile Tab (User Avatar with inset ring)
+              _NavItem(
+                itemKey: const ValueKey('profile_tab'),
+                tooltip: 'Profile',
+                onTap: () => onTap(4),
                 child: Container(
-                  padding: const EdgeInsets.all(2),
+                  padding: const EdgeInsets.all(AppTokens.space2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: selectedIndex == 4 ? activeColor : Colors.transparent,
-                      width: 1.5,
+                      color: selectedIndex == 4 ? activeColor : AppTokens.lightBorder,
+                      width: selectedIndex == 4 ? 1.8 : 0.8,
                     ),
                   ),
                   child: ClipOval(
@@ -121,6 +108,39 @@ class PinterestNavBar extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final Key? itemKey;
+  final String tooltip;
+  final VoidCallback onTap;
+  final Widget child;
+
+  const _NavItem({
+    this.itemKey,
+    required this.tooltip,
+    required this.onTap,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: TactileScaleTap(
+        key: itemKey,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(child: child),
         ),
       ),
     );

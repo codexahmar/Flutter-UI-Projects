@@ -70,7 +70,10 @@ class _HomePageState extends State<HomePage> {
             ),
 
             // Tab 3: Updates
-            const PinterestUpdatesScreen(),
+            PinterestUpdatesScreen(
+              pins: _pins,
+              onToggleSave: _onToggleSave,
+            ),
 
             // Tab 4: Profile
             PinterestProfileScreen(

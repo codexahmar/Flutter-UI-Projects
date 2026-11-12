@@ -3,24 +3,31 @@ import 'package:flutter/services.dart';
 import '../constants/app_assets.dart';
 import '../themes/design_tokens.dart';
 
-/// Clean profile header component (avatar, name, bio, handles, actions)
+/// Clean Pinterest profile header (avatar, name, handle, bio, tabular stats, soft neutral capsules)
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppTokens.space16, AppTokens.space24, AppTokens.space16, 0),
+      padding: const EdgeInsets.fromLTRB(
+        AppTokens.space16,
+        AppTokens.space24,
+        AppTokens.space16,
+        0,
+      ),
       child: Column(
         children: [
-          // 1. Centered User Avatar
+          // 1. Centered User Avatar with hairline edge
           Container(
             width: 96,
             height: 96,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppTokens.lightBorder,
+                color: AppTokens.lightImageHairline,
                 width: 1,
               ),
             ),
@@ -33,20 +40,15 @@ class ProfileHeader extends StatelessWidget {
           ),
           const SizedBox(height: AppTokens.space12),
 
-          // 2. User Name & Verified Badge
+          // 2. Display Name & Verified Mark
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 'Ahmaryar khan',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.5,
-                  color: AppTokens.lightTextPrimary,
-                ),
+                style: textTheme.headlineMedium,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppTokens.space4),
               const Icon(
                 Icons.verified_rounded,
                 color: AppTokens.pinterestRed,
@@ -54,61 +56,56 @@ class ProfileHeader extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 2),
-          const Text(
+          const SizedBox(height: AppTokens.space4),
+
+          // 3. Handle & Bio
+          Text(
             '@codexahmar',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppTokens.lightTextSecondary,
-            ),
+            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 6),
-          const Text(
+          const SizedBox(height: AppTokens.space8),
+          Text(
             'Software Engineer. I build cool stuff.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              height: 1.3,
-              color: AppTokens.lightTextPrimary,
-            ),
+            style: textTheme.bodyLarge?.copyWith(fontSize: 14),
           ),
-          const SizedBox(height: 6),
-          const Row(
+          const SizedBox(height: AppTokens.space8),
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.link_rounded, size: 14, color: AppTokens.lightTextPrimary),
-              SizedBox(width: 4),
+              const Icon(
+                Icons.link_rounded,
+                size: 15,
+                color: AppTokens.lightTextSecondary,
+              ),
+              const SizedBox(width: AppTokens.space4),
               Text(
                 'github.com/codexahmar',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                style: textTheme.labelMedium?.copyWith(
                   color: AppTokens.lightTextPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          const Text(
+          const SizedBox(height: AppTokens.space8),
+          Text(
             '142 Pins · 12.8k followers · 420 following',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+            style: textTheme.bodyMedium?.copyWith(
               color: AppTokens.lightTextPrimary,
+              fontWeight: FontWeight.w600,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
           const SizedBox(height: AppTokens.space16),
 
-          // 4. Action Buttons (Share, Edit profile in crisp Pinterest light mode)
+          // 4. Authentic Pinterest Profile Action Capsules (Borderless #EFEFEF soft fill)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+              _ProfileActionPill(
+                label: 'Share',
                 onTap: () {
-                  HapticFeedback.lightImpact();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Profile link copied'),
@@ -116,29 +113,11 @@ class ProfileHeader extends StatelessWidget {
                     ),
                   );
                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: AppTokens.lightPillBorder, width: 1.0),
-                    borderRadius: BorderRadius.circular(AppTokens.radiusButton),
-                  ),
-                  child: const Text(
-                    'Share',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      letterSpacing: -0.2,
-                      color: AppTokens.lightTextPrimary,
-                    ),
-                  ),
-                ),
               ),
               const SizedBox(width: AppTokens.space12),
-              InkWell(
-                borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+              _ProfileActionPill(
+                label: 'Edit profile',
                 onTap: () {
-                  HapticFeedback.lightImpact();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Edit profile settings'),
@@ -146,28 +125,53 @@ class ProfileHeader extends StatelessWidget {
                     ),
                   );
                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: AppTokens.lightPillBorder, width: 1.0),
-                    borderRadius: BorderRadius.circular(AppTokens.radiusButton),
-                  ),
-                  child: const Text(
-                    'Edit profile',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      letterSpacing: -0.2,
-                      color: AppTokens.lightTextPrimary,
-                    ),
-                  ),
-                ),
               ),
             ],
           ),
           const SizedBox(height: AppTokens.space20),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileActionPill extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _ProfileActionPill({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTokens.space24,
+          vertical: AppTokens.space12,
+        ),
+        decoration: BoxDecoration(
+          color: AppTokens.lightPill,
+          borderRadius: BorderRadius.circular(AppTokens.radiusButton),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: AppTokens.lightTextPrimary,
+          ),
+        ),
       ),
     );
   }

@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../data/pinterest_data.dart';
 import '../themes/design_tokens.dart';
+import 'cached_pin_image.dart';
 
-/// Modal bottom sheet for pin options (Hide, Download, Copy Link, Report)
+/// Modal bottom sheet for pin options (Copy link, Download, Hide, Report)
 class PinOptionsSheet extends StatelessWidget {
   final PinItem pin;
 
@@ -22,12 +22,21 @@ class PinOptionsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       decoration: const BoxDecoration(
         color: AppTokens.lightSurface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTokens.radiusPin)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTokens.radiusSheet),
+        ),
       ),
-      padding: const EdgeInsets.fromLTRB(AppTokens.space16, AppTokens.space12, AppTokens.space16, AppTokens.space24),
+      padding: const EdgeInsets.fromLTRB(
+        AppTokens.space16,
+        AppTokens.space12,
+        AppTokens.space16,
+        AppTokens.space24,
+      ),
       child: SafeArea(
         top: false,
         child: Column(
@@ -38,10 +47,10 @@ class PinOptionsSheet extends StatelessWidget {
             Center(
               child: Container(
                 width: 36,
-                height: 4,
+                height: AppTokens.space4,
                 decoration: BoxDecoration(
-                  color: AppTokens.lightBorder,
-                  borderRadius: BorderRadius.circular(2),
+                  color: AppTokens.lightPillHover,
+                  borderRadius: BorderRadius.circular(AppTokens.space2),
                 ),
               ),
             ),
@@ -50,24 +59,15 @@ class PinOptionsSheet extends StatelessWidget {
             // Pin Preview Info
             Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: CachedPinImage(
                     imageUrl: pin.imageUrl,
-                    width: 44,
-                    height: 44,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(
-                      width: 44,
-                      height: 44,
-                      color: AppTokens.lightPill,
-                    ),
-                    errorWidget: (_, __, ___) => Image.asset(
-                      pin.assetFallback,
-                      width: 44,
-                      height: 44,
-                      fit: BoxFit.cover,
-                    ),
+                    assetFallback: pin.assetFallback,
+                    isStudioCutout: pin.isStudioCutout,
+                    borderRadius: AppTokens.radiusSm,
+                    cutoutPadding: AppTokens.space4,
                   ),
                 ),
                 const SizedBox(width: AppTokens.space12),
@@ -79,20 +79,12 @@ class PinOptionsSheet extends StatelessWidget {
                         pin.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                          letterSpacing: -0.2,
-                          color: AppTokens.lightTextPrimary,
-                        ),
+                        style: textTheme.titleSmall?.copyWith(fontSize: 14),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppTokens.space2),
                       Text(
                         pin.author,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppTokens.lightTextSecondary,
-                        ),
+                        style: textTheme.bodySmall,
                       ),
                     ],
                   ),
@@ -103,7 +95,7 @@ class PinOptionsSheet extends StatelessWidget {
             const Divider(height: 1, color: AppTokens.lightBorder),
             const SizedBox(height: AppTokens.space8),
 
-            // Action Items
+            // Clean borderless typographic action list (no decorative icon circles)
             _ActionTile(
               icon: Icons.link_rounded,
               title: 'Copy link',
@@ -118,7 +110,7 @@ class PinOptionsSheet extends StatelessWidget {
               },
             ),
             _ActionTile(
-              icon: Icons.download_rounded,
+              icon: Icons.download_outlined,
               title: 'Download image',
               onTap: () {
                 Navigator.pop(context);
@@ -183,27 +175,30 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = isDestructive ? AppTokens.pinterestRed : AppTokens.lightTextPrimary;
-    final circleBg = isDestructive ? const Color(0xFFFEECEE) : const Color(0xFFF7F7F7);
+    final textTheme = Theme.of(context).textTheme;
+    final foreground =
+        isDestructive ? AppTokens.pinterestRedDark : AppTokens.lightTextPrimary;
 
     return InkWell(
       onTap: () {
         HapticFeedback.lightImpact();
         onTap();
       },
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppTokens.radiusSm),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        padding: const EdgeInsets.symmetric(
+          vertical: AppTokens.space12,
+          horizontal: AppTokens.space4,
+        ),
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: circleBg,
-                shape: BoxShape.circle,
+            SizedBox(
+              width: 28,
+              child: Icon(
+                icon,
+                size: 22,
+                color: foreground,
               ),
-              child: Icon(icon, size: 20, color: primaryColor),
             ),
             const SizedBox(width: AppTokens.space12),
             Expanded(
@@ -212,21 +207,16 @@ class _ActionTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      fontSize: 15,
+                    style: textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
-                      letterSpacing: -0.2,
-                      color: primaryColor,
+                      color: foreground,
                     ),
                   ),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppTokens.space2),
                     Text(
                       subtitle!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppTokens.lightTextSecondary,
-                      ),
+                      style: textTheme.bodySmall,
                     ),
                   ],
                 ],
@@ -238,4 +228,3 @@ class _ActionTile extends StatelessWidget {
     );
   }
 }
-
