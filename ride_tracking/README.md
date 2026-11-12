@@ -1,17 +1,21 @@
-# ride_tracking
+# Ride Tracking UI
 
-A new Flutter project.
+An interactive dark-mode Flutter ride-booking and live trip tracking UI built around a Midnight Slate + Sky Azure palette and a custom vector street map.
 
-## Getting Started
+## Demo
 
-This project is a starting point for a Flutter application.
+<img src="demo.gif" width="300" alt="Ride Tracking UI Demo" />
 
-A few resources to get you started if this is your first Flutter project:
+## Highlights
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- **Interactive Vector Map**: Street-aligned shortest-path routing with tappable named places (buildings, shops, houses, park), ambient traffic, and driver approach/departure animations.
+- **Full Rider Flow**: `Book a ride` entry CTA → stop selection → driver match preview → `Book ride` confirmation → pickup arrival (`PIN 4920`) → boarding & drop-off → rating or skip back to `Book a ride`.
+- **Step Progress & Custom Snackbar**: State-aware two-stop indicator (`RouteStepIndicator`) and top notification-style snackbar (`RideSnackbar`).
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Quick Start
+
+```bash
+flutter pub get
+flutter run
+flutter test
+```
