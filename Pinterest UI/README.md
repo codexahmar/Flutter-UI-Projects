@@ -2,11 +2,9 @@
 
 A clean, responsive Flutter recreation of the Pinterest mobile interface built around faithful light-mode design tokens, staggered two-column masonry layouts, and fluid motion transitions.
 
-## Screenshots
+## Demo
 
-| Home Feed | Profile |
-| :---: | :---: |
-| <img src="screenshots/home.png" width="300" alt="Pinterest Home Feed" /> | <img src="screenshots/profile.png" width="300" alt="Pinterest Profile Screen" /> |
+<img src="demo.webp" width="300" alt="Pinterest UI Demo" />
 
 ## Highlights
 
