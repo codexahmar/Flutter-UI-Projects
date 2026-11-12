@@ -1,30 +1,39 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:ride_tracking/main.dart';
+import 'package:ride_tracking/widgets/car_marker.dart';
+import 'package:ride_tracking/widgets/radar_pulse.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('RideTrackingScreen progresses through ride phases', (
+    tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Finding a driver'), findsOneWidget);
+    expect(find.text('Matching nearby drivers'), findsOneWidget);
+    expect(find.byType(RadarPulse), findsOneWidget);
+    expect(find.byType(CarMarker), findsNothing);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    // Advance into matched phase (t = 0.30 * 13s = 3.9s).
+    await tester.pump(const Duration(seconds: 4));
+    expect(find.text('Driver matched'), findsOneWidget);
+    expect(find.text('Ahsan Malik'), findsOneWidget);
+    expect(find.byType(RadarPulse), findsNothing);
+    expect(find.byType(CarMarker), findsOneWidget);
+
+    // Advance into arriving phase (t = 8s / 13s ≈ 0.615).
+    await tester.pump(const Duration(seconds: 4));
+    expect(find.text('Driver arriving'), findsOneWidget);
+    expect(find.text('min'), findsOneWidget);
+
+    // Tap Call action button.
+    await tester.tap(find.byTooltip('Call driver'));
     await tester.pump();
+    expect(find.text('Calling Ahsan Malik…'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Advance into arrived phase (t = 12.2s / 13s ≈ 0.938).
+    await tester.pump(const Duration(milliseconds: 4200));
+    expect(find.text('Driver arrived'), findsOneWidget);
+    expect(find.text('Here'), findsOneWidget);
   });
 }
