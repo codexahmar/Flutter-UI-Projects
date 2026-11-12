@@ -4,11 +4,12 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ride_tracking/app_theme.dart';
+import 'package:ride_tracking/ride_routing.dart';
 import 'package:ride_tracking/widgets/car_marker.dart';
 import 'package:ride_tracking/widgets/customer_marker.dart';
 import 'package:ride_tracking/widgets/ride_status_card.dart';
 
-/// Vector street map with interactive pin placement, ambient traffic/riders, boarding, and drop-off route tracking.
+/// Interactive vector street map with varied place architecture, ambient life, boarding, and route tracking.
 class RideMap extends StatefulWidget {
   final Offset pickupPoint;
   final Offset? destinationPoint;
@@ -16,10 +17,13 @@ class RideMap extends StatefulWidget {
   final String? destinationLabel;
   final List<Offset> driverRoutePoints;
   final List<Offset> tripRoutePoints;
+  final List<Offset> departureRoutePoints;
   final ValueListenable<double> routeProgress;
   final ValueListenable<double> boardingProgress;
+  final ValueListenable<double> departureProgress;
   final ValueListenable<double> trafficProgress;
   final RidePhase phase;
+  final bool showBooking;
   final bool cameraFollow;
   final ValueChanged<Offset>? onMapTap;
 
@@ -31,10 +35,13 @@ class RideMap extends StatefulWidget {
     required this.destinationLabel,
     required this.driverRoutePoints,
     required this.tripRoutePoints,
+    required this.departureRoutePoints,
     required this.routeProgress,
     required this.boardingProgress,
+    required this.departureProgress,
     required this.trafficProgress,
     required this.phase,
+    required this.showBooking,
     required this.cameraFollow,
     this.onMapTap,
   });
@@ -43,21 +50,41 @@ class RideMap extends StatefulWidget {
   State<RideMap> createState() => _RideMapState();
 }
 
-class _RideMapState extends State<RideMap> {
+class _RideMapState extends State<RideMap> with SingleTickerProviderStateMixin {
   static const _ambientRoutes = [
     [Offset(0.145, 0.12), Offset(0.16, 0.58), Offset(0.185, 0.90)],
     [Offset(0.515, 0.88), Offset(0.49, 0.50), Offset(0.46, 0.14)],
     [Offset(0.94, 0.425), Offset(0.56, 0.45), Offset(0.06, 0.45)],
   ];
   static const _ambientOffsets = [0.0, 0.37, 0.68];
-  static const _ambientRiders = [Offset(0.27, 0.37), Offset(0.58, 0.60)];
+  static const _ambientRiders = [Offset(0.45, 0.445), Offset(0.64, 0.555)];
 
+  late final AnimationController _tapRipple = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
+
+  Offset? _lastTap;
   Size? _cachedSize;
   Path? _driverPath;
   PathMetric? _driverMetric;
   Path? _tripPath;
   PathMetric? _tripMetric;
+  PathMetric? _departureMetric;
   List<PathMetric> _trafficMetrics = const [];
+
+  @override
+  void dispose() {
+    _tapRipple.dispose();
+    super.dispose();
+  }
+
+  void _triggerTapRipple(Offset normalizedPoint) {
+    _lastTap = normalizedPoint;
+    if (!MediaQuery.disableAnimationsOf(context)) {
+      _tapRipple.forward(from: 0);
+    }
+  }
 
   void _ensureGeometry(Size size) {
     if (size.isEmpty) return;
@@ -89,6 +116,13 @@ class _RideMapState extends State<RideMap> {
       _tripPath = null;
       _tripMetric = null;
     }
+
+    if (widget.departureRoutePoints.length >= 2) {
+      final path = _buildSmoothPath(widget.departureRoutePoints, size);
+      _departureMetric = path.computeMetrics().firstOrNull;
+    } else {
+      _departureMetric = null;
+    }
   }
 
   @override
@@ -96,7 +130,11 @@ class _RideMapState extends State<RideMap> {
     super.didUpdateWidget(oldWidget);
     if (_cachedSize != null &&
         (!listEquals(oldWidget.driverRoutePoints, widget.driverRoutePoints) ||
-            !listEquals(oldWidget.tripRoutePoints, widget.tripRoutePoints))) {
+            !listEquals(oldWidget.tripRoutePoints, widget.tripRoutePoints) ||
+            !listEquals(
+              oldWidget.departureRoutePoints,
+              widget.departureRoutePoints,
+            ))) {
       _rebuildRoutes(_cachedSize!);
     }
   }
@@ -124,10 +162,9 @@ class _RideMapState extends State<RideMap> {
     final isInTrip = phase == RidePhase.inTrip;
     final isCompleted = phase == RidePhase.completed;
     final showApproachRoute = isApproach && _driverMetric != null;
-    final showActiveTripRoute = (isInTrip || isCompleted) && _tripMetric != null;
+    final showActiveTripRoute = isInTrip && _tripMetric != null;
     final activeMetric = showActiveTripRoute ? _tripMetric : _driverMetric;
-    final showMatchedCar =
-        (isApproach || isInTrip || isCompleted) && activeMetric != null;
+    final showMatchedCar = (isApproach || isInTrip) && activeMetric != null;
 
     return ClipRect(
       child: LayoutBuilder(
@@ -141,11 +178,27 @@ class _RideMapState extends State<RideMap> {
 
           final mapStack = Stack(
             children: [
-              const Positioned.fill(
+              Positioned.fill(
                 child: RepaintBoundary(
-                  child: CustomPaint(painter: _StaticMapPainter()),
+                  child: CustomPaint(
+                    painter: _StaticMapPainter(
+                      pickupLabel: widget.showBooking ? widget.pickupLabel : '',
+                      destinationLabel: widget.showBooking
+                          ? widget.destinationLabel
+                          : null,
+                    ),
+                  ),
                 ),
               ),
+              if (isSelecting && widget.showBooking)
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _TapRipplePainter(
+                      progress: _tapRipple,
+                      getPoint: () => _lastTap,
+                    ),
+                  ),
+                ),
               if (_tripPath != null && !showActiveTripRoute)
                 Positioned.fill(
                   child: RepaintBoundary(
@@ -255,9 +308,38 @@ class _RideMapState extends State<RideMap> {
                     builder: (context, progress, child) {
                       return _buildCarTransform(
                         metric: activeMetric,
-                        progress: isCompleted ? 1.0 : progress,
+                        progress: progress,
                         halfSize: matchedCarHalf,
                         child: child!,
+                      );
+                    },
+                  ),
+                ),
+              if (_departureMetric != null)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  child: ValueListenableBuilder<double>(
+                    valueListenable: widget.departureProgress,
+                    child: const RepaintBoundary(child: CarMarker()),
+                    builder: (context, t, child) {
+                      if ((t <= 0 && !isCompleted) || t >= 1.0) {
+                        return const SizedBox.shrink();
+                      }
+                      final eased = reduceMotion
+                          ? t
+                          : Curves.easeInCubic.transform(t);
+                      final fade = (1.0 -
+                              const Interval(0.68, 1.0).transform(t))
+                          .clamp(0.0, 1.0);
+                      return Opacity(
+                        opacity: fade,
+                        child: _buildCarTransform(
+                          metric: _departureMetric!,
+                          progress: eased,
+                          halfSize: matchedCarHalf,
+                          child: child!,
+                        ),
                       );
                     },
                   ),
@@ -265,15 +347,15 @@ class _RideMapState extends State<RideMap> {
               _buildRiderOverlay(
                 size: size,
                 phase: phase,
-                isSelecting: isSelecting,
                 isSearching: isSearching,
                 reduceMotion: reduceMotion,
               ),
             ],
           );
 
-          final interactiveMap = isSelecting && widget.onMapTap != null
-              ? GestureDetector(
+          final interactiveMap =
+              isSelecting && widget.showBooking && widget.onMapTap != null
+                  ? GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTapUp: (details) {
                     if (size.isEmpty) return;
@@ -282,10 +364,12 @@ class _RideMapState extends State<RideMap> {
                       0.90,
                     );
                     final ny = (details.localPosition.dy / size.height).clamp(
-                      0.22,
-                      0.58,
+                      0.20,
+                      0.60,
                     );
-                    widget.onMapTap!(Offset(nx, ny));
+                    final tapPoint = Offset(nx, ny);
+                    _triggerTapRipple(tapPoint);
+                    widget.onMapTap!(tapPoint);
                   },
                   child: mapStack,
                 )
@@ -360,7 +444,6 @@ class _RideMapState extends State<RideMap> {
   Widget _buildRiderOverlay({
     required Size size,
     required RidePhase phase,
-    required bool isSelecting,
     required bool isSearching,
     required bool reduceMotion,
   }) {
@@ -385,7 +468,9 @@ class _RideMapState extends State<RideMap> {
               ? board
               : Curves.easeInOutCubic.transform(board);
           return Positioned(
-            left: size.width * widget.pickupPoint.dx - CustomerMarker.anchorOffset.dx,
+            left:
+                size.width * widget.pickupPoint.dx -
+                CustomerMarker.anchorOffset.dx,
             top:
                 size.height * widget.pickupPoint.dy -
                 CustomerMarker.anchorOffset.dy +
@@ -413,7 +498,7 @@ class _RideMapState extends State<RideMap> {
       child: CustomerMarker(
         isPrimary: true,
         isPulsing: isSearching,
-        callout: isSelecting ? widget.pickupLabel : 'You',
+        callout: 'You',
         semanticLabel: 'Your pickup point at ${widget.pickupLabel}',
       ),
     );
@@ -444,7 +529,7 @@ class _DestinationPin extends StatelessWidget {
 
   const _DestinationPin({required this.label});
 
-  static const double width = 104;
+  static const double width = 136;
   static const double height = 46;
   static const Offset anchorOffset = Offset(width / 2, height - 8);
 
@@ -538,11 +623,30 @@ Path _buildSmoothPath(
 }
 
 class _StaticMapPainter extends CustomPainter {
-  const _StaticMapPainter();
+  final String pickupLabel;
+  final String? destinationLabel;
+
+  const _StaticMapPainter({required this.pickupLabel, this.destinationLabel});
 
   static final _bgPaint = Paint()..color = RideColors.canvas;
-  static final _blockPaint = Paint()..color = RideColors.mapBlock;
+  static final _blockShadowPaint = Paint()..color = RideColors.mapRoadCasing;
+  static final _towerPaint = Paint()..color = RideColors.mapBlock;
+  static final _housePaint = Paint()..color = RideColors.mapHouse;
+  static final _shopPaint = Paint()..color = RideColors.mapShop;
+  static final _awningPaint = Paint()
+    ..color = RideColors.mapAwning.withValues(alpha: 0.45);
   static final _parkPaint = Paint()..color = RideColors.mapPark;
+  static final _parkCanopyPaint = Paint()..color = RideColors.mapParkCanopy;
+  static final _activePlaceFill = Paint()
+    ..color = RideColors.accent.withValues(alpha: 0.14);
+  static final _activePlaceStroke = Paint()
+    ..color = RideColors.accentBorder
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1.6;
+  static final _roofBorderPaint = Paint()
+    ..color = RideColors.mapBuildingBorder
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1.1;
   static final _waterPaint = Paint()
     ..color = RideColors.mapWater
     ..style = PaintingStyle.stroke
@@ -575,21 +679,17 @@ class _StaticMapPainter extends CustomPainter {
       );
     canvas.drawPath(canal, _waterPaint);
 
-    final blocks = [
-      (Rect.fromLTWH(size.width * 0.22, size.height * 0.08, 92, 68), false),
-      (Rect.fromLTWH(size.width * 0.54, size.height * 0.09, 76, 60), false),
-      (Rect.fromLTWH(size.width * 0.05, size.height * 0.32, 74, 86), false),
-      (Rect.fromLTWH(size.width * 0.24, size.height * 0.33, 88, 66), true),
-      (Rect.fromLTWH(size.width * 0.54, size.height * 0.31, 70, 50), false),
-      (Rect.fromLTWH(size.width * 0.83, size.height * 0.34, 62, 54), false),
-      (Rect.fromLTWH(size.width * 0.55, size.height * 0.61, 84, 68), false),
-      (Rect.fromLTWH(size.width * 0.25, size.height * 0.67, 94, 70), false),
-    ];
-    for (final (rect, isPark) in blocks) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(RideRadius.sm)),
-        isPark ? _parkPaint : _blockPaint,
+    for (final place in RideRouting.places) {
+      final rect = Rect.fromLTWH(
+        size.width * place.x,
+        size.height * place.y,
+        size.width * place.w,
+        size.height * place.h,
       );
+      final isSelected =
+          place.label != null &&
+          (place.label == pickupLabel || place.label == destinationLabel);
+      _paintPlace(canvas, rect, place, isSelected: isSelected);
     }
 
     final minorStreets = [
@@ -651,54 +751,229 @@ class _StaticMapPainter extends CustomPainter {
       canvas.drawPath(p, _majorFill);
     }
 
-    _drawMapLabel(
+    _drawCenteredLabel(
       canvas,
       'MM Alam Rd',
-      Offset(size.width * 0.45, size.height * 0.52),
-      -0.55,
+      Offset(size.width * 0.455, size.height * 0.525),
+      angle: -0.55,
     );
-    _drawMapLabel(
+    _drawCenteredLabel(
       canvas,
       'Main Blvd',
-      Offset(size.width * 0.80, size.height * 0.52),
-      -1.50,
+      Offset(size.width * 0.805, size.height * 0.48),
+      angle: -1.50,
     );
-    _drawMapLabel(
+    _drawCenteredLabel(
       canvas,
-      'Gulberg III',
-      Offset(size.width * 0.29, size.height * 0.36),
-      0,
+      'West Ave',
+      Offset(size.width * 0.128, size.height * 0.49),
+      angle: -1.54,
     );
   }
 
-  static void _drawMapLabel(
+  static void _paintPlace(
+    Canvas canvas,
+    Rect rect,
+    MapPlace place, {
+    bool isSelected = false,
+  }) {
+    final radius = place.kind == MapPlaceKind.house ? 6.0 : RideRadius.sm;
+    final outer = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+    canvas.drawRRect(outer.shift(const Offset(0, 2)), _blockShadowPaint);
+
+    switch (place.kind) {
+      case MapPlaceKind.tower:
+        canvas.drawRRect(outer, _towerPaint);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(rect.deflate(4), const Radius.circular(6)),
+          _roofBorderPaint,
+        );
+        // Stepped penthouse rooftop tier
+        final tier = Rect.fromCenter(
+          center: rect.center,
+          width: rect.width * 0.56,
+          height: rect.height * 0.54,
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(tier, const Radius.circular(4)),
+          _roofBorderPaint,
+        );
+      case MapPlaceKind.mall:
+        canvas.drawRRect(outer, _towerPaint);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(rect.deflate(3.5), const Radius.circular(6)),
+          _roofBorderPaint,
+        );
+        // Twin glass atrium bays
+        for (final sign in const [-0.2, 0.2]) {
+          final bay = Rect.fromCenter(
+            center: rect.center.translate(rect.width * sign, 0),
+            width: rect.width * 0.24,
+            height: rect.height * 0.46,
+          );
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(bay, const Radius.circular(3)),
+            _roofBorderPaint,
+          );
+        }
+      case MapPlaceKind.shop:
+        canvas.drawRRect(outer, _shopPaint);
+        canvas.drawRRect(outer, _roofBorderPaint);
+        // Warm storefront awning strip along curb-facing edge
+        final awning = Rect.fromLTWH(
+          rect.left + 3,
+          rect.top + 2.5,
+          rect.width - 6,
+          4.5,
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(awning, const Radius.circular(2)),
+          _awningPaint,
+        );
+      case MapPlaceKind.house:
+        // Yard plot + inset hip-roof house footprint
+        canvas.drawRRect(outer, _parkPaint);
+        final houseRect = rect.deflate(5);
+        final houseRRect = RRect.fromRectAndRadius(
+          houseRect,
+          const Radius.circular(4),
+        );
+        canvas.drawRRect(houseRRect, _housePaint);
+        canvas.drawRRect(houseRRect, _roofBorderPaint);
+        // Gable roof ridge slightly above center so label below stays crisp
+        final ridgeY = houseRect.top + houseRect.height * 0.34;
+        final leftRidge = Offset(
+          houseRect.left + houseRect.width * 0.28,
+          ridgeY,
+        );
+        final rightRidge = Offset(
+          houseRect.right - houseRect.width * 0.28,
+          ridgeY,
+        );
+        canvas
+          ..drawLine(leftRidge, rightRidge, _roofBorderPaint)
+          ..drawLine(houseRect.topLeft, leftRidge, _roofBorderPaint)
+          ..drawLine(houseRect.bottomLeft, leftRidge, _roofBorderPaint)
+          ..drawLine(houseRect.topRight, rightRidge, _roofBorderPaint)
+          ..drawLine(houseRect.bottomRight, rightRidge, _roofBorderPaint);
+      case MapPlaceKind.park:
+        canvas.drawRRect(outer, _parkPaint);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(rect.deflate(3.5), const Radius.circular(7)),
+          _roofBorderPaint,
+        );
+        // Scattered circular tree canopies & central plaza ring
+        for (final (ox, oy, r) in const [
+          (-0.32, -0.22, 6.5),
+          (0.30, -0.18, 7.5),
+          (-0.26, 0.24, 5.5),
+          (0.33, 0.22, 6.0),
+        ]) {
+          canvas.drawCircle(
+            rect.center.translate(rect.width * ox, rect.height * oy),
+            r,
+            _parkCanopyPaint,
+          );
+        }
+        canvas.drawCircle(rect.center, 8, _roofBorderPaint);
+    }
+
+    if (isSelected) {
+      canvas
+        ..drawRRect(outer, _activePlaceFill)
+        ..drawRRect(outer, _activePlaceStroke);
+    }
+
+    if (place.label != null) {
+      _drawCenteredLabel(
+        canvas,
+        place.label!,
+        place.labelPosition(rect),
+        color: isSelected
+            ? RideColors.accent
+            : (place.kind == MapPlaceKind.park
+                  ? RideColors.mapParkLabel
+                  : RideColors.mapLabel),
+        maxWidth: math.max(28, rect.width - 4),
+        fontSize: 8.5,
+      );
+    }
+  }
+
+  static void _drawCenteredLabel(
     Canvas canvas,
     String text,
-    Offset center,
-    double angle,
-  ) {
+    Offset center, {
+    double angle = 0,
+    Color color = RideColors.mapLabel,
+    double maxWidth = 120,
+    double fontSize = 10,
+  }) {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: const TextStyle(
-          color: RideColors.mapLabel,
-          fontSize: 10,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0.4,
+          letterSpacing: 0.25,
         ),
       ),
+      textAlign: TextAlign.center,
+      maxLines: 1,
       textDirection: TextDirection.ltr,
-    )..layout();
+    )..layout(maxWidth: maxWidth);
 
     canvas.save();
     canvas.translate(center.dx, center.dy);
-    canvas.rotate(angle);
+    if (angle != 0) canvas.rotate(angle);
     painter.paint(canvas, Offset(-painter.width / 2, -painter.height / 2));
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant _StaticMapPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _StaticMapPainter oldDelegate) {
+    return oldDelegate.pickupLabel != pickupLabel ||
+        oldDelegate.destinationLabel != destinationLabel;
+  }
+}
+
+extension on MapPlace {
+  Offset labelPosition(Rect rect) {
+    if (kind == MapPlaceKind.shop) {
+      return rect.center.translate(0, 2);
+    }
+    if (kind == MapPlaceKind.house) {
+      return rect.center.translate(0, rect.height * 0.14);
+    }
+    return rect.center;
+  }
+}
+
+class _TapRipplePainter extends CustomPainter {
+  final Animation<double> progress;
+  final Offset? Function() getPoint;
+
+  _TapRipplePainter({required this.progress, required this.getPoint})
+    : super(repaint: progress);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final point = getPoint();
+    final t = progress.value;
+    if (point == null || t <= 0 || t >= 1) return;
+
+    final center = Offset(size.width * point.dx, size.height * point.dy);
+    final radius = 8 + 26 * Curves.easeOut.transform(t);
+    final paint = Paint()
+      ..color = RideColors.accent.withValues(alpha: (1 - t) * 0.65)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawCircle(center, radius, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _TapRipplePainter oldDelegate) => false;
 }
 
 class _TripPreviewPainter extends CustomPainter {
@@ -707,8 +982,15 @@ class _TripPreviewPainter extends CustomPainter {
 
   const _TripPreviewPainter({required this.path, required this.highlight});
 
+  static final _casingPaint = Paint()
+    ..color = RideColors.mapRoadCasing
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 6.5
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round;
+
   static final _selectingPaint = Paint()
-    ..color = RideColors.textPrimary
+    ..color = RideColors.accent
     ..style = PaintingStyle.stroke
     ..strokeWidth = 3.5
     ..strokeCap = StrokeCap.round
@@ -723,7 +1005,13 @@ class _TripPreviewPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawPath(path, highlight ? _selectingPaint : _dimmedPaint);
+    if (highlight) {
+      canvas
+        ..drawPath(path, _casingPaint)
+        ..drawPath(path, _selectingPaint);
+    } else {
+      canvas.drawPath(path, _dimmedPaint);
+    }
   }
 
   @override

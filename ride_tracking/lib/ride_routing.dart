@@ -3,7 +3,34 @@ import 'dart:ui';
 
 typedef RidePreset = ({String label, Offset point});
 
-typedef SnappedStop = ({Offset point, String label});
+enum MapPlaceKind { tower, mall, shop, house, park }
+
+class MapPlace {
+  final double x;
+  final double y;
+  final double w;
+  final double h;
+  final MapPlaceKind kind;
+  final String? label;
+  final Offset? curb;
+
+  const MapPlace({
+    required this.x,
+    required this.y,
+    required this.w,
+    required this.h,
+    required this.kind,
+    this.label,
+    this.curb,
+  });
+
+  bool contains(Offset p, {double margin = 0.012}) {
+    return p.dx >= x - margin &&
+        p.dx <= x + w + margin &&
+        p.dy >= y - margin &&
+        p.dy <= y + h + margin;
+  }
+}
 
 class RideRoutePlan {
   final List<Offset> points;
@@ -21,7 +48,7 @@ class RideRoutePlan {
 
 abstract final class RideRouting {
   static const defaultPickup = Offset(0.77, 0.28);
-  static const defaultPickupLabel = 'MM Alam Rd';
+  static const defaultPickupLabel = 'Main Blvd';
 
   static const presets = <RidePreset>[
     (label: 'Liberty Sq', point: Offset(0.486, 0.45)),
@@ -29,7 +56,97 @@ abstract final class RideRouting {
     (label: 'DHA Phase 5', point: Offset(0.158, 0.545)),
   ];
 
-  // Portrait-weighted aspect factor so vertical road segments reflect real visual length.
+  /// Architectural footprints painted on the map; named entries are directly tappable.
+  static const places = <MapPlace>[
+    MapPlace(
+      x: 0.195,
+      y: 0.18,
+      w: 0.23,
+      h: 0.08,
+      kind: MapPlaceKind.tower,
+      label: 'Siddiq Trade',
+      curb: Offset(0.31, 0.296),
+    ),
+    MapPlace(
+      x: 0.52,
+      y: 0.175,
+      w: 0.205,
+      h: 0.08,
+      kind: MapPlaceKind.tower,
+      label: 'Vogue Towers',
+      curb: Offset(0.62, 0.285),
+    ),
+    MapPlace(
+      x: 0.20,
+      y: 0.33,
+      w: 0.24,
+      h: 0.088,
+      kind: MapPlaceKind.park,
+      label: 'Gulberg Park',
+      curb: Offset(0.32, 0.45),
+    ),
+    MapPlace(
+      x: 0.515,
+      y: 0.312,
+      w: 0.185,
+      h: 0.056,
+      kind: MapPlaceKind.mall,
+      label: 'Liberty Hub',
+      curb: Offset(0.60, 0.286),
+    ),
+    MapPlace(
+      x: 0.81,
+      y: 0.305,
+      w: 0.17,
+      h: 0.08,
+      kind: MapPlaceKind.shop,
+      label: 'Hafeez Mart',
+      curb: Offset(0.765, 0.34),
+    ),
+    MapPlace(
+      x: 0.20,
+      y: 0.48,
+      w: 0.185,
+      h: 0.075,
+      kind: MapPlaceKind.mall,
+      label: 'Al-Fatah',
+      curb: Offset(0.28, 0.45),
+    ),
+    MapPlace(
+      x: 0.555,
+      y: 0.472,
+      w: 0.18,
+      h: 0.058,
+      kind: MapPlaceKind.shop,
+      label: 'Second Cup',
+      curb: Offset(0.65, 0.443),
+    ),
+    MapPlace(
+      x: 0.545,
+      y: 0.585,
+      w: 0.20,
+      h: 0.085,
+      kind: MapPlaceKind.house,
+      label: 'Model House',
+      curb: Offset(0.64, 0.565),
+    ),
+    MapPlace(
+      x: 0.21,
+      y: 0.63,
+      w: 0.23,
+      h: 0.085,
+      kind: MapPlaceKind.house,
+      label: 'Cavalry Villa',
+      curb: Offset(0.34, 0.59),
+    ),
+    // Supporting neighborhood houses & shops for dense city framing
+    MapPlace(x: 0.015, y: 0.325, w: 0.10, h: 0.082, kind: MapPlaceKind.house),
+    MapPlace(x: 0.015, y: 0.475, w: 0.105, h: 0.082, kind: MapPlaceKind.shop),
+    MapPlace(x: 0.825, y: 0.18, w: 0.14, h: 0.07, kind: MapPlaceKind.shop),
+    MapPlace(x: 0.815, y: 0.46, w: 0.15, h: 0.072, kind: MapPlaceKind.house),
+  ];
+
+  // Portrait-weighted aspect factor so vertical segments match visual street distance.
   static const _verticalWeight = 1.65;
 
   static const _nodes = <Offset>[
@@ -58,7 +175,7 @@ abstract final class RideRouting {
     // Horizontal corridors
     (15, 0, 'Gulberg III'),
     (0, 1, 'Gulberg III'),
-    (1, 2, 'MM Alam Rd'),
+    (1, 2, 'North Blvd'),
     (2, 16, 'Main Blvd'),
     (17, 3, 'Canal Bank Rd'),
     (3, 4, 'Canal Bank Rd'),
@@ -76,7 +193,7 @@ abstract final class RideRouting {
     (1, 4, 'Liberty Rd'),
     (4, 9, 'Liberty Rd'),
     (14, 2, 'Main Blvd'),
-    (2, 11, 'MM Alam Rd'),
+    (2, 11, 'Main Blvd'),
     (11, 6, 'Main Blvd'),
     (6, 10, 'Main Blvd'),
     // MM Alam Rd diagonal
@@ -91,30 +208,24 @@ abstract final class RideRouting {
     Offset(0.151, 0.303), // North-West (Gulberg)
   ];
 
-  /// Snaps a normalized map tap onto the nearest street segment and returns its label.
-  static SnappedStop snapToRoad(Offset tap) {
-    var bestDist = double.infinity;
-    var bestPoint = tap;
-    var bestLabel = 'Canal Bank Rd';
-
-    for (final (u, v, label) in _edges) {
-      final projected = _projectOnSegment(tap, _nodes[u], _nodes[v]);
-      final dist = _weightedDistance(tap, projected);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestPoint = projected;
-        bestLabel = label;
+  /// Snaps a map tap to a tapped landmark curb or nearest street segment.
+  static ({Offset point, String label}) snapToRoad(Offset tap) {
+    for (final place in places) {
+      if (place.label != null &&
+          place.curb != null &&
+          place.contains(tap)) {
+        return (point: place.curb!, label: place.label!);
       }
     }
-
-    return (point: bestPoint, label: bestLabel);
+    final hit = _nearestEdge(tap);
+    return (point: hit.point, label: hit.label);
   }
 
-  /// Picks a realistic nearby driver spawn point and plans the road route to [pickup].
+  /// Picks a nearby driver hub and plans a street-aligned approach route to [pickup].
   static RideRoutePlan planDriverApproach(Offset pickup) {
     Offset? chosenHub;
     var bestHubDist = double.infinity;
-    Offset farthestHub = _driverHubs.first;
+    var farthestHub = _driverHubs.first;
     var maxDist = -1.0;
 
     for (final hub in _driverHubs) {
@@ -130,6 +241,70 @@ abstract final class RideRouting {
     }
 
     return planRoute(chosenHub ?? farthestHub, pickup, isApproach: true);
+  }
+
+  /// Plans a continuing street path for the driver's car to depart after drop-off.
+  static List<Offset> planDepartureRoute(
+    Offset destination,
+    List<Offset> tripPoints,
+  ) {
+    final hit = _nearestEdge(destination);
+    final (u, v, _) = _edges[hit.index];
+    final prevPt = tripPoints.length >= 2
+        ? tripPoints[tripPoints.length - 2]
+        : _nodes[u];
+    final incomingDir = _weightedUnit(destination - prevPt);
+
+    final toU = _weightedUnit(_nodes[u] - destination);
+    final toV = _weightedUnit(_nodes[v] - destination);
+    final dotU = _weightedDot(incomingDir, toU);
+    final dotV = _weightedDot(incomingDir, toV);
+
+    var prevIdx = dotV >= dotU ? u : v;
+    var currIdx = dotV >= dotU ? v : u;
+    final path = <Offset>[destination];
+
+    for (var hop = 0; hop < 2; hop++) {
+      final currPt = _nodes[currIdx];
+      if ((currPt - path.last).distance > 0.015) {
+        path.add(currPt);
+      }
+
+      final heading = _weightedUnit(currPt - path[path.length - 2]);
+      int? nextIdx;
+      var bestDot = 0.25;
+      for (final (a, b, _) in _edges) {
+        final cand = a == currIdx ? b : (b == currIdx ? a : -1);
+        if (cand == -1 || cand == prevIdx) continue;
+        final d = _weightedDot(heading, _weightedUnit(_nodes[cand] - currPt));
+        if (d > bestDot) {
+          bestDot = d;
+          nextIdx = cand;
+        }
+      }
+      if (nextIdx == null) break;
+      prevIdx = currIdx;
+      currIdx = nextIdx;
+    }
+
+    final anchor = path.length >= 2 ? path[path.length - 2] : prevPt;
+    final tailDir = path.last - anchor;
+    final len = tailDir.distance;
+    if (len > 0) {
+      path.add(path.last + (tailDir / len) * 0.22);
+    }
+    return _dedupePoints(path);
+  }
+
+  static Offset _weightedUnit(Offset v) {
+    final len = math.sqrt(
+      v.dx * v.dx + (v.dy * _verticalWeight) * (v.dy * _verticalWeight),
+    );
+    return len == 0 ? const Offset(1, 0) : v / len;
+  }
+
+  static double _weightedDot(Offset a, Offset b) {
+    return a.dx * b.dx + (a.dy * _verticalWeight) * (b.dy * _verticalWeight);
   }
 
   /// Computes a street-aligned shortest path, distance in km, ETA, and fare from [from] to [to].
@@ -162,8 +337,8 @@ abstract final class RideRouting {
   }
 
   static List<Offset> _shortestRoadPath(Offset start, Offset end) {
-    final startEdge = _closestEdgeIndex(start);
-    final endEdge = _closestEdgeIndex(end);
+    final startEdge = _nearestEdge(start).index;
+    final endEdge = _nearestEdge(end).index;
 
     if (startEdge == endEdge) {
       return _dedupePoints([start, end]);
@@ -173,8 +348,11 @@ abstract final class RideRouting {
     final startIdx = nodeCount;
     final endIdx = nodeCount + 1;
     final totalCount = nodeCount + 2;
-
-    final adj = List.generate(totalCount, (_) => <(int, double)>[], growable: false);
+    final adj = List.generate(
+      totalCount,
+      (_) => <(int, double)>[],
+      growable: false,
+    );
 
     void connect(int a, int b, double w) {
       adj[a].add((b, w));
@@ -233,19 +411,25 @@ abstract final class RideRouting {
     return _dedupePoints(chain.reversed.toList());
   }
 
-  static int _closestEdgeIndex(Offset p) {
+  static ({int index, Offset point, String label}) _nearestEdge(Offset p) {
     var bestIdx = 0;
     var bestDist = double.infinity;
+    var bestPoint = p;
+    var bestLabel = 'Canal Bank Rd';
+
     for (var i = 0; i < _edges.length; i++) {
-      final (u, v, _) = _edges[i];
+      final (u, v, label) = _edges[i];
       final proj = _projectOnSegment(p, _nodes[u], _nodes[v]);
       final d = _weightedDistance(p, proj);
       if (d < bestDist) {
         bestDist = d;
         bestIdx = i;
+        bestPoint = proj;
+        bestLabel = label;
       }
     }
-    return bestIdx;
+
+    return (index: bestIdx, point: bestPoint, label: bestLabel);
   }
 
   static Offset _projectOnSegment(Offset p, Offset a, Offset b) {
@@ -281,4 +465,3 @@ abstract final class RideRouting {
     return out;
   }
 }
-

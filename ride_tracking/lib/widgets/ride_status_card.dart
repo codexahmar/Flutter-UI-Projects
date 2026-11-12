@@ -27,6 +27,7 @@ class RideStatusCard extends StatelessWidget {
   final String pickupLabel;
   final String? destinationLabel;
   final double? tripDistanceKm;
+  final int? tripEtaMinutes;
   final int? farePkr;
 
   const RideStatusCard({
@@ -36,73 +37,87 @@ class RideStatusCard extends StatelessWidget {
     required this.pickupLabel,
     required this.destinationLabel,
     this.tripDistanceKm,
+    this.tripEtaMinutes,
     this.farePkr,
   });
 
   @override
   Widget build(BuildContext context) {
     final km = (tripDistanceKm ?? 0).toStringAsFixed(1);
+    final tripEta = tripEtaMinutes ?? 6;
     final remaining = status.remainingKm.toStringAsFixed(1);
+    final isIdle =
+        status.phase == RidePhase.selecting && destinationLabel == null;
 
     final (title, subtitle) = switch (status.phase) {
       RidePhase.selecting when destinationLabel == null => (
         activeField == StopField.pickup
-            ? 'Set pickup on map'
-            : 'Set destination on map',
+            ? 'Set pickup point'
+            : 'Set destination',
         activeField == StopField.pickup
-            ? 'Tap any street to move pickup'
-            : 'Tap map or pick a drop-off below',
+            ? 'Tap any road or place on map'
+            : 'Tap any place or pick below',
       ),
       RidePhase.selecting => (
-        'Route ready',
-        '$pickupLabel → $destinationLabel · $km km',
+        '$km km · $tripEta min ride',
+        '$pickupLabel → $destinationLabel',
       ),
       RidePhase.searching => (
-        'Finding your driver',
-        '3 nearby drivers near $pickupLabel',
+        'Finding drivers',
+        'Searching near $pickupLabel',
       ),
-      RidePhase.matched => ('Driver on the way', 'Heading to $pickupLabel'),
-      RidePhase.arriving => ('Arriving soon', 'Coming to $pickupLabel'),
-      RidePhase.arrived => (
-        'Driver has arrived',
-        'Share PIN 4920 to board at $pickupLabel',
+      RidePhase.matched => ('Driver found', 'Ahsan Malik · Ready to book'),
+      RidePhase.arriving when status.eta <= 1 => (
+        'Arriving soon',
+        'Almost at $pickupLabel',
       ),
+      RidePhase.arriving => ('Driver on the way', 'Heading to $pickupLabel'),
+      RidePhase.arrived => ('Driver arrived', 'Outside at $pickupLabel'),
       RidePhase.inTrip when status.isBoarding => (
-        'Getting in the car',
-        'Starting trip from $pickupLabel',
+        'Boarding RideX',
+        'Starting at $pickupLabel',
       ),
       RidePhase.inTrip => (
-        'On trip to $destinationLabel',
-        '$remaining km left · Heading to drop-off',
+        'To $destinationLabel',
+        '$remaining km left · RideX',
       ),
-      RidePhase.completed => (
-        'You have arrived',
-        'Dropped off at $destinationLabel',
-      ),
+      RidePhase.completed => ('You arrived', 'Dropped at $destinationLabel'),
     };
 
-    final showTrailing =
-        status.phase != RidePhase.searching &&
-        !(status.phase == RidePhase.selecting && destinationLabel == null);
+    final icon = switch (status.phase) {
+      RidePhase.selecting => Icons.alt_route_rounded,
+      RidePhase.searching => Icons.radar_rounded,
+      RidePhase.matched ||
+      RidePhase.arriving => Icons.directions_car_filled_rounded,
+      RidePhase.arrived => Icons.location_on_rounded,
+      RidePhase.inTrip => Icons.navigation_rounded,
+      RidePhase.completed => Icons.check_rounded,
+    };
+
+    final showTrailing = status.phase != RidePhase.searching && !isIdle;
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: RideSpacing.lg,
+        horizontal: RideSpacing.md,
         vertical: RideSpacing.md,
       ),
       decoration: RideTheme.cardDecoration,
       child: Row(
         children: [
           Container(
-            width: 8,
-            height: 8,
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color:
-                  status.phase == RidePhase.selecting &&
-                      destinationLabel == null
-                  ? RideColors.textSecondary
-                  : RideColors.accent,
+              color: isIdle ? RideColors.surfaceSubtle : RideColors.accentTint,
+              borderRadius: BorderRadius.circular(RideRadius.sm),
+              border: Border.all(
+                color: isIdle ? RideColors.border : RideColors.accentBorder,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 17,
+              color: isIdle ? RideColors.textSecondary : RideColors.accent,
             ),
           ),
           const SizedBox(width: RideSpacing.md),
@@ -215,7 +230,9 @@ class _StatusPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: highlighted ? RideColors.accentTint : RideColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(RideRadius.pill),
-        border: highlighted ? null : Border.all(color: RideColors.border),
+        border: Border.all(
+          color: highlighted ? RideColors.accentBorder : RideColors.border,
+        ),
       ),
       child: Text(
         label,

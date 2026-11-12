@@ -1,39 +1,45 @@
 import 'package:flutter/material.dart';
 
 abstract final class RideColors {
-  static const canvas = Color(0xFF0C1014);
-  static const mapBlock = Color(0xFF13191F);
-  static const mapPark = Color(0xFF111D19);
-  static const mapWater = Color(0xFF0E1822);
-  static const mapLabel = Color(0xFF566370);
-  static const mapRoadCasing = Color(0xFF080B0E);
-  static const mapRoadMinor = Color(0xFF1A222A);
-  static const mapRoadMajor = Color(0xFF222C36);
+  static const canvas = Color(0xFF0A0F18);
+  static const mapBlock = Color(0xFF121A28);
+  static const mapHouse = Color(0xFF152031);
+  static const mapShop = Color(0xFF182234);
+  static const mapAwning = Color(0xFF38BDF8);
+  static const mapBuildingBorder = Color(0xFF24334C);
+  static const mapPark = Color(0xFF0E2126);
+  static const mapParkCanopy = Color(0xFF16343A);
+  static const mapLabel = Color(0xFF7E91B0);
+  static const mapParkLabel = Color(0xFF5CA6A8);
+  static const mapWater = Color(0xFF0B1C2D);
+  static const mapRoadCasing = Color(0xFF060A10);
+  static const mapRoadMinor = Color(0xFF172030);
+  static const mapRoadMajor = Color(0xFF212E45);
 
-  static const surface = Color(0xFF14191F);
-  static const surfaceSubtle = Color(0xFF1E262E);
-  static const border = Color(0xFF28323C);
+  static const surface = Color(0xFF111827);
+  static const surfaceSubtle = Color(0xFF1A2438);
+  static const border = Color(0xFF2A3954);
 
-  static const textPrimary = Color(0xFFF1F5F8);
-  static const textSecondary = Color(0xFF96A2AE);
+  static const textPrimary = Color(0xFFF3F7FC);
+  static const textSecondary = Color(0xFF93A5C2);
 
-  static const accent = Color(0xFF34D399);
-  static const accentTint = Color(0xFF132D23);
-  static const inkOnAccent = Color(0xFF071A12);
-  static const inkOnLight = Color(0xFF0C1014);
-  static const routeTrack = Color(0xFF2E3A46);
-  static const rating = Color(0xFFF5B942);
+  static const accent = Color(0xFF38BDF8);
+  static const accentTint = Color(0xFF102A43);
+  static const accentBorder = Color(0xFF225D8F);
+  static const inkOnAccent = Color(0xFF041320);
+  static const routeTrack = Color(0xFF283A57);
+  static const rating = Color(0xFFFBBF24);
 
-  static const carBody = Color(0xFFF1F5F8);
-  static const ambientCarBody = Color(0xFF546270);
-  static const carCabin = Color(0xFF10161C);
-  static const carTrim = Color(0xFFD6DEE6);
-  static const carTaillight = Color(0xFFDC2626);
+  static const carBody = Color(0xFFF3F7FC);
+  static const ambientCarBody = Color(0xFF4F6280);
+  static const carCabin = Color(0xFF0A101A);
+  static const carTrim = Color(0xFFD2DFEF);
+  static const carTaillight = Color(0xFFEF4444);
 
   static const customerSkin = Color(0xFFE7C2A6);
-  static const customerHair = Color(0xFF1B242E);
-  static const ambientRider = Color(0xFF64748B);
-  static const shadow = Color(0x5A000000);
+  static const customerHair = Color(0xFF141B29);
+  static const ambientRider = Color(0xFF607494);
+  static const shadow = Color(0x7002050B);
 }
 
 abstract final class RideSpacing {
@@ -41,8 +47,6 @@ abstract final class RideSpacing {
   static const double sm = 8;
   static const double md = 12;
   static const double lg = 16;
-  static const double xl = 24;
-  static const double xxl = 32;
 }
 
 abstract final class RideRadius {
@@ -55,9 +59,9 @@ abstract final class RideRadius {
 abstract final class RideText {
   static const hero = TextStyle(
     color: RideColors.textPrimary,
-    fontSize: 22,
+    fontSize: 23,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
     height: 1.05,
     fontFeatures: [FontFeature.tabularFigures()],
   );
@@ -66,15 +70,16 @@ abstract final class RideText {
     color: RideColors.textPrimary,
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.2,
-    height: 1.25,
+    letterSpacing: -0.3,
+    height: 1.22,
   );
 
   static const body = TextStyle(
     color: RideColors.textPrimary,
     fontSize: 14,
     fontWeight: FontWeight.w500,
-    height: 1.3,
+    letterSpacing: -0.1,
+    height: 1.32,
   );
 
   static const button = TextStyle(
@@ -88,6 +93,7 @@ abstract final class RideText {
     color: RideColors.textSecondary,
     fontSize: 12,
     fontWeight: FontWeight.w500,
+    letterSpacing: 0.05,
     height: 1.35,
   );
 
@@ -95,6 +101,7 @@ abstract final class RideText {
     color: RideColors.textPrimary,
     fontSize: 12,
     fontWeight: FontWeight.w600,
+    letterSpacing: 0.05,
     height: 1.35,
     fontFeatures: [FontFeature.tabularFigures()],
   );
@@ -107,6 +114,15 @@ abstract final class RideTheme {
     border: Border.fromBorderSide(BorderSide(color: RideColors.border)),
     boxShadow: [
       BoxShadow(color: RideColors.shadow, blurRadius: 20, offset: Offset(0, 8)),
+    ],
+  );
+
+  static const sheetDecoration = BoxDecoration(
+    color: RideColors.surface,
+    borderRadius: BorderRadius.vertical(top: Radius.circular(RideRadius.lg)),
+    border: Border.fromBorderSide(BorderSide(color: RideColors.border)),
+    boxShadow: [
+      BoxShadow(color: RideColors.shadow, blurRadius: 24, offset: Offset(0, -6)),
     ],
   );
 
@@ -124,6 +140,19 @@ abstract final class RideTheme {
         onSurface: RideColors.textPrimary,
         outline: RideColors.border,
       ),
+      textTheme: const TextTheme(
+        headlineMedium: RideText.hero,
+        titleMedium: RideText.title,
+        bodyMedium: RideText.body,
+        bodySmall: RideText.caption,
+        labelLarge: RideText.button,
+        labelMedium: RideText.captionTabular,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: RideColors.border,
+        thickness: 1,
+        space: 1,
+      ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
           backgroundColor: RideColors.surface,
@@ -135,8 +164,8 @@ abstract final class RideTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: RideColors.textPrimary,
-          foregroundColor: RideColors.inkOnLight,
+          backgroundColor: RideColors.accent,
+          foregroundColor: RideColors.inkOnAccent,
           disabledBackgroundColor: RideColors.surfaceSubtle,
           disabledForegroundColor: RideColors.textSecondary,
           minimumSize: minButtonSize,
@@ -161,15 +190,6 @@ abstract final class RideTheme {
         cursorColor: RideColors.accent,
         selectionColor: RideColors.accent.withValues(alpha: 0.25),
         selectionHandleColor: RideColors.accent,
-      ),
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: RideColors.surfaceSubtle,
-        contentTextStyle: RideText.body,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(RideRadius.md),
-          side: const BorderSide(color: RideColors.border),
-        ),
       ),
     );
   }

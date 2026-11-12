@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:ride_tracking/app_theme.dart';
 import 'package:ride_tracking/ride_routing.dart';
 import 'package:ride_tracking/widgets/ride_status_card.dart';
+import 'package:ride_tracking/widgets/route_step_indicator.dart';
 
-/// Floating bottom card for stop selection, driver search, active ride, trip progress, and drop-off completion.
-class DriverCard extends StatelessWidget {
+/// Docked bottom sheet handling stop selection, nearby matching, driver confirmation, live trip, and rating.
+class RideBottomSheet extends StatelessWidget {
   final RidePhase phase;
   final StopField activeField;
   final String pickupLabel;
@@ -18,14 +19,16 @@ class DriverCard extends StatelessWidget {
   final ValueChanged<StopField> onSelectField;
   final void Function(Offset point, String label) onPickPresetDestination;
   final VoidCallback onFindDriver;
+  final VoidCallback onBookRide;
   final VoidCallback onCall;
   final VoidCallback onMessage;
   final VoidCallback onCancel;
   final VoidCallback onOnMyWay;
   final ValueChanged<int> onRateDriver;
-  final VoidCallback onBookAnother;
+  final VoidCallback onSubmitRating;
+  final VoidCallback onSkipRating;
 
-  const DriverCard({
+  const RideBottomSheet({
     super.key,
     required this.phase,
     required this.activeField,
@@ -39,20 +42,22 @@ class DriverCard extends StatelessWidget {
     required this.onSelectField,
     required this.onPickPresetDestination,
     required this.onFindDriver,
+    required this.onBookRide,
     required this.onCall,
     required this.onMessage,
     required this.onCancel,
     required this.onOnMyWay,
     required this.onRateDriver,
-    required this.onBookAnother,
+    required this.onSubmitRating,
+    required this.onSkipRating,
   });
 
-  static const _avatarUrl =
-      'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200';
+  static const _avatarAsset = 'assets/images/driver_avatar.jpg';
 
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     final resolvedDest = destinationLabel ?? 'DHA Phase 5';
     final resolvedKm = distanceKm ?? 3.8;
     final resolvedFare = farePkr ?? 410;
@@ -79,18 +84,17 @@ class DriverCard extends StatelessWidget {
       ),
       RidePhase.completed => _CompletedContent(
         key: const ValueKey('completed'),
-        avatarUrl: _avatarUrl,
-        pickupLabel: pickupLabel,
-        destinationLabel: resolvedDest,
+        avatarAsset: _avatarAsset,
         distanceKm: resolvedKm,
         farePkr: resolvedFare,
         rating: rating,
         onRateDriver: onRateDriver,
-        onBookAnother: onBookAnother,
+        onSubmitRating: onSubmitRating,
+        onSkipRating: onSkipRating,
       ),
       _ => _DriverContent(
         key: const ValueKey('driver'),
-        avatarUrl: _avatarUrl,
+        avatarAsset: _avatarAsset,
         phase: phase,
         pickupLabel: pickupLabel,
         destinationLabel: resolvedDest,
@@ -98,27 +102,49 @@ class DriverCard extends StatelessWidget {
         farePkr: resolvedFare,
         routeProgress: routeProgress,
         isBoarding: isBoarding,
+        onBookRide: onBookRide,
         onCall: onCall,
         onMessage: onMessage,
+        onCancel: onCancel,
         onOnMyWay: onOnMyWay,
       ),
     };
 
     return Container(
-      padding: const EdgeInsets.all(RideSpacing.lg),
-      decoration: RideTheme.cardDecoration,
-      child: AnimatedSize(
-        duration: reduceMotion
-            ? Duration.zero
-            : const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        alignment: Alignment.topCenter,
-        child: AnimatedSwitcher(
-          duration: reduceMotion
-              ? Duration.zero
-              : const Duration(milliseconds: 180),
-          child: content,
-        ),
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(
+        RideSpacing.lg,
+        RideSpacing.sm + 2,
+        RideSpacing.lg,
+        RideSpacing.lg + bottomInset,
+      ),
+      decoration: RideTheme.sheetDecoration,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: RideColors.border,
+              borderRadius: BorderRadius.circular(RideRadius.pill),
+            ),
+          ),
+          const SizedBox(height: RideSpacing.md),
+          AnimatedSize(
+            duration: reduceMotion
+                ? Duration.zero
+                : const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: AnimatedSwitcher(
+              duration: reduceMotion
+                  ? Duration.zero
+                  : const Duration(milliseconds: 180),
+              child: content,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -152,21 +178,46 @@ class _SelectingContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _StopRow(
-          label: 'Pickup',
-          value: pickupLabel,
-          isPickup: true,
-          isActive: activeField == StopField.pickup,
-          onTap: () => onSelectField(StopField.pickup),
-        ),
-        const SizedBox(height: RideSpacing.sm),
-        _StopRow(
-          label: 'Destination',
-          value: destinationLabel ?? 'Tap map to select drop-off',
-          isPickup: false,
-          isPlaceholder: destinationLabel == null,
-          isActive: activeField == StopField.destination,
-          onTap: () => onSelectField(StopField.destination),
+        Container(
+          decoration: BoxDecoration(
+            color: RideColors.surfaceSubtle,
+            borderRadius: BorderRadius.circular(RideRadius.md),
+            border: Border.all(color: RideColors.border),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: RideSpacing.md),
+                child: RouteStepIndicator(
+                  phase: RidePhase.selecting,
+                  destinationReady: canRequest,
+                  height: 69,
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _StopRow(
+                      label: 'Pickup',
+                      value: pickupLabel,
+                      isActive: activeField == StopField.pickup,
+                      onTap: () => onSelectField(StopField.pickup),
+                    ),
+                    const Divider(),
+                    _StopRow(
+                      label: 'Drop-off',
+                      value: destinationLabel ?? 'Tap map to choose',
+                      isPlaceholder: destinationLabel == null,
+                      isActive: activeField == StopField.destination,
+                      onTap: () => onSelectField(StopField.destination),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: RideSpacing.md),
         Wrap(
@@ -187,12 +238,6 @@ class _SelectingContent extends StatelessWidget {
           width: double.infinity,
           child: FilledButton(
             onPressed: canRequest ? onFindDriver : null,
-            style: canRequest
-                ? FilledButton.styleFrom(
-                    backgroundColor: RideColors.accent,
-                    foregroundColor: RideColors.inkOnAccent,
-                  )
-                : null,
             child: Text(
               canRequest ? 'Find drivers · PKR $farePkr' : 'Choose destination',
             ),
@@ -220,10 +265,12 @@ class _PresetChip extends StatelessWidget {
       selected: selected,
       onSelected: (_) => onSelected(),
       showCheckmark: false,
+      visualDensity: VisualDensity.compact,
+      padding: const EdgeInsets.symmetric(horizontal: RideSpacing.xs),
       selectedColor: RideColors.accentTint,
       backgroundColor: RideColors.surfaceSubtle,
       side: BorderSide(
-        color: selected ? RideColors.accent : RideColors.border,
+        color: selected ? RideColors.accentBorder : RideColors.border,
       ),
       shape: const StadiumBorder(),
       label: Text(
@@ -239,7 +286,6 @@ class _PresetChip extends StatelessWidget {
 class _StopRow extends StatelessWidget {
   final String label;
   final String value;
-  final bool isPickup;
   final bool isPlaceholder;
   final bool isActive;
   final VoidCallback onTap;
@@ -247,7 +293,6 @@ class _StopRow extends StatelessWidget {
   const _StopRow({
     required this.label,
     required this.value,
-    required this.isPickup,
     required this.isActive,
     required this.onTap,
     this.isPlaceholder = false,
@@ -256,35 +301,18 @@ class _StopRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: RideColors.surfaceSubtle,
-      borderRadius: BorderRadius.circular(RideRadius.md),
-      clipBehavior: Clip.antiAlias,
+      color: isActive
+          ? RideColors.accentTint.withValues(alpha: 0.65)
+          : RideColors.surfaceSubtle,
       child: InkWell(
         onTap: onTap,
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: RideSpacing.md,
-            vertical: RideSpacing.md,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(RideRadius.md),
-            border: Border.all(
-              color: isActive ? RideColors.accent : RideColors.border,
-              width: isActive ? 1.5 : 1,
-            ),
+            vertical: RideSpacing.sm + 2,
           ),
           child: Row(
             children: [
-              Container(
-                width: 9,
-                height: 9,
-                decoration: BoxDecoration(
-                  shape: isPickup ? BoxShape.circle : BoxShape.rectangle,
-                  borderRadius: isPickup ? null : BorderRadius.circular(2),
-                  color: isPickup ? RideColors.accent : RideColors.textPrimary,
-                ),
-              ),
-              const SizedBox(width: RideSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,13 +332,26 @@ class _StopRow extends StatelessWidget {
                   ],
                 ),
               ),
-              if (isActive)
-                Text(
-                  'Tap map',
-                  style: RideText.captionTabular.copyWith(
-                    color: RideColors.accent,
+              if (isActive) ...[
+                const SizedBox(width: RideSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: RideSpacing.sm,
+                    vertical: RideSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: RideColors.accentTint,
+                    borderRadius: BorderRadius.circular(RideRadius.pill),
+                    border: Border.all(color: RideColors.accentBorder),
+                  ),
+                  child: Text(
+                    'Tap map',
+                    style: RideText.captionTabular.copyWith(
+                      color: RideColors.accent,
+                    ),
                   ),
                 ),
+              ],
             ],
           ),
         ),
@@ -372,6 +413,7 @@ class _SearchingContent extends StatelessWidget {
         ),
         const SizedBox(height: RideSpacing.lg),
         _TripSummary(
+          phase: RidePhase.searching,
           pickupLabel: pickupLabel,
           destinationLabel: destinationLabel,
           distanceKm: distanceKm,
@@ -391,7 +433,7 @@ class _SearchingContent extends StatelessWidget {
 }
 
 class _DriverContent extends StatelessWidget {
-  final String avatarUrl;
+  final String avatarAsset;
   final RidePhase phase;
   final String pickupLabel;
   final String destinationLabel;
@@ -399,13 +441,15 @@ class _DriverContent extends StatelessWidget {
   final int farePkr;
   final ValueListenable<double> routeProgress;
   final bool isBoarding;
+  final VoidCallback onBookRide;
   final VoidCallback onCall;
   final VoidCallback onMessage;
+  final VoidCallback onCancel;
   final VoidCallback onOnMyWay;
 
   const _DriverContent({
     super.key,
-    required this.avatarUrl,
+    required this.avatarAsset,
     required this.phase,
     required this.pickupLabel,
     required this.destinationLabel,
@@ -413,76 +457,90 @@ class _DriverContent extends StatelessWidget {
     required this.farePkr,
     required this.routeProgress,
     required this.isBoarding,
+    required this.onBookRide,
     required this.onCall,
     required this.onMessage,
+    required this.onCancel,
     required this.onOnMyWay,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isMatched = phase == RidePhase.matched;
     final isArrived = phase == RidePhase.arrived;
     final isInTrip = phase == RidePhase.inTrip;
+    const buttonPadding = EdgeInsets.symmetric(horizontal: RideSpacing.md);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _DriverHeader(avatarUrl: avatarUrl),
-        const SizedBox(height: RideSpacing.lg),
+        _DriverHeader(avatarAsset: avatarAsset),
+        const SizedBox(height: RideSpacing.md),
+        const Divider(),
+        const SizedBox(height: RideSpacing.md),
         _TripSummary(
+          phase: phase,
           pickupLabel: pickupLabel,
           destinationLabel: destinationLabel,
           distanceKm: distanceKm,
           farePkr: farePkr,
+          routeProgress: routeProgress,
         ),
         const SizedBox(height: RideSpacing.lg),
         if (isInTrip)
           _LiveTripProgress(
             pickupLabel: pickupLabel,
-            destinationLabel: destinationLabel,
             routeProgress: routeProgress,
             isBoarding: isBoarding,
+          )
+        else if (isMatched)
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: OutlinedButton(
+                  onPressed: onCancel,
+                  style: OutlinedButton.styleFrom(padding: buttonPadding),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: RideSpacing.md),
+              Expanded(
+                flex: 3,
+                child: FilledButton(
+                  onPressed: onBookRide,
+                  style: FilledButton.styleFrom(padding: buttonPadding),
+                  child: Text(
+                    'Book ride · PKR $farePkr',
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
           )
         else
           Row(
             children: [
               Expanded(
-                flex: isArrived ? 4 : 5,
-                child: OutlinedButton(
+                child: OutlinedButton.icon(
                   onPressed: isArrived ? onCall : onMessage,
-                  child: Row(
-                    mainAxisAlignment: isArrived
-                        ? MainAxisAlignment.center
-                        : MainAxisAlignment.start,
-                    children: [
-                      Icon(
-                        isArrived
-                            ? Icons.call_rounded
-                            : Icons.chat_bubble_outline_rounded,
-                        size: 18,
-                      ),
-                      const SizedBox(width: RideSpacing.sm),
-                      Flexible(
-                        child: Text(
-                          isArrived ? 'Call' : 'Message',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                  style: OutlinedButton.styleFrom(padding: buttonPadding),
+                  icon: Icon(
+                    isArrived
+                        ? Icons.call_rounded
+                        : Icons.chat_bubble_outline_rounded,
+                    size: 18,
                   ),
+                  label: Text(isArrived ? 'Call' : 'Message'),
                 ),
               ),
               const SizedBox(width: RideSpacing.md),
               Expanded(
-                flex: isArrived ? 5 : 4,
                 child: FilledButton.icon(
                   onPressed: isArrived ? onOnMyWay : onCall,
-                  style: isArrived
-                      ? FilledButton.styleFrom(
-                          backgroundColor: RideColors.accent,
-                          foregroundColor: RideColors.inkOnAccent,
-                        )
-                      : null,
+                  style: FilledButton.styleFrom(padding: buttonPadding),
                   icon: Icon(
                     isArrived
                         ? Icons.directions_walk_rounded
@@ -501,13 +559,11 @@ class _DriverContent extends StatelessWidget {
 
 class _LiveTripProgress extends StatelessWidget {
   final String pickupLabel;
-  final String destinationLabel;
   final ValueListenable<double> routeProgress;
   final bool isBoarding;
 
   const _LiveTripProgress({
     required this.pickupLabel,
-    required this.destinationLabel,
     required this.routeProgress,
     required this.isBoarding,
   });
@@ -526,8 +582,8 @@ class _LiveTripProgress extends StatelessWidget {
                 Expanded(
                   child: Text(
                     isBoarding
-                        ? 'Boarding at $pickupLabel'
-                        : 'Heading to $destinationLabel',
+                        ? 'Entering at $pickupLabel'
+                        : 'Heading to drop-off',
                     style: RideText.captionTabular,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -558,36 +614,37 @@ class _LiveTripProgress extends StatelessWidget {
 }
 
 class _CompletedContent extends StatelessWidget {
-  final String avatarUrl;
-  final String pickupLabel;
-  final String destinationLabel;
+  final String avatarAsset;
   final double distanceKm;
   final int farePkr;
   final int rating;
   final ValueChanged<int> onRateDriver;
-  final VoidCallback onBookAnother;
+  final VoidCallback onSubmitRating;
+  final VoidCallback onSkipRating;
 
   const _CompletedContent({
     super.key,
-    required this.avatarUrl,
-    required this.pickupLabel,
-    required this.destinationLabel,
+    required this.avatarAsset,
     required this.distanceKm,
     required this.farePkr,
     required this.rating,
     required this.onRateDriver,
-    required this.onBookAnother,
+    required this.onSubmitRating,
+    required this.onSkipRating,
   });
 
   @override
   Widget build(BuildContext context) {
+    final km = distanceKm.toStringAsFixed(1);
+    final hasRating = rating > 0;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            _DriverAvatar(avatarUrl: avatarUrl),
+            _DriverAvatar(avatarAsset: avatarAsset),
             const SizedBox(width: RideSpacing.md),
             Expanded(
               child: Column(
@@ -597,8 +654,10 @@ class _CompletedContent extends StatelessWidget {
                   const Text('Trip completed', style: RideText.title),
                   const SizedBox(height: RideSpacing.xs),
                   Text(
-                    '$pickupLabel → $destinationLabel · ${distanceKm.toStringAsFixed(1)} km',
-                    style: RideText.caption,
+                    'Ahsan Malik · $km km',
+                    style: RideText.caption.copyWith(
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -624,52 +683,80 @@ class _CompletedContent extends StatelessWidget {
         ),
         const SizedBox(height: RideSpacing.md),
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: RideSpacing.md,
-            vertical: RideSpacing.sm,
+          padding: const EdgeInsets.fromLTRB(
+            RideSpacing.md,
+            RideSpacing.sm,
+            RideSpacing.md,
+            RideSpacing.xs,
           ),
           decoration: BoxDecoration(
             color: RideColors.surfaceSubtle,
             borderRadius: BorderRadius.circular(RideRadius.md),
             border: Border.all(color: RideColors.border),
           ),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              for (var star = 1; star <= 5; star++)
-                Expanded(
-                  child: IconButton(
-                    onPressed: () => onRateDriver(star),
-                    tooltip: 'Rate $star stars',
-                    style: IconButton.styleFrom(
-                      backgroundColor: RideColors.surfaceSubtle,
-                      side: BorderSide.none,
-                      minimumSize: const Size.square(44),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      padding: EdgeInsets.zero,
-                    ),
-                    icon: Icon(
-                      Icons.star_rounded,
-                      size: 28,
-                      color: star <= rating
-                          ? RideColors.rating
-                          : RideColors.border,
-                    ),
-                  ),
+              Text(
+                hasRating
+                    ? 'Rated $rating of 5 stars'
+                    : 'How was your ride with Ahsan?',
+                style: RideText.captionTabular.copyWith(
+                  color: hasRating
+                      ? RideColors.rating
+                      : RideColors.textSecondary,
                 ),
+              ),
+              const SizedBox(height: RideSpacing.xs),
+              Row(
+                children: [
+                  for (var star = 1; star <= 5; star++)
+                    Expanded(
+                      child: IconButton(
+                        onPressed: () => onRateDriver(star),
+                        tooltip: 'Rate $star stars',
+                        style: IconButton.styleFrom(
+                          backgroundColor: RideColors.surfaceSubtle,
+                          side: BorderSide.none,
+                          minimumSize: const Size.square(44),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          padding: EdgeInsets.zero,
+                        ),
+                        icon: Icon(
+                          star <= rating
+                              ? Icons.star_rounded
+                              : Icons.star_outline_rounded,
+                          size: 28,
+                          color: star <= rating
+                              ? RideColors.rating
+                              : RideColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
         const SizedBox(height: RideSpacing.lg),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: onBookAnother,
-            style: FilledButton.styleFrom(
-              backgroundColor: RideColors.accent,
-              foregroundColor: RideColors.inkOnAccent,
+        Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: OutlinedButton(
+                onPressed: onSkipRating,
+                child: const Text('Skip'),
+              ),
             ),
-            child: const Text('Book another ride'),
-          ),
+            const SizedBox(width: RideSpacing.md),
+            Expanded(
+              flex: 3,
+              child: FilledButton(
+                onPressed: hasRating ? onSubmitRating : null,
+                child: Text(hasRating ? 'Submit rating' : 'Rate driver'),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -677,16 +764,16 @@ class _CompletedContent extends StatelessWidget {
 }
 
 class _DriverHeader extends StatelessWidget {
-  final String avatarUrl;
+  final String avatarAsset;
 
-  const _DriverHeader({required this.avatarUrl});
+  const _DriverHeader({required this.avatarAsset});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _DriverAvatar(avatarUrl: avatarUrl),
+        _DriverAvatar(avatarAsset: avatarAsset),
         const SizedBox(width: RideSpacing.md),
         Expanded(
           child: Column(
@@ -701,7 +788,7 @@ class _DriverHeader extends StatelessWidget {
               ),
               const SizedBox(height: RideSpacing.xs),
               Semantics(
-                label: 'Rated 4.9 stars',
+                label: 'Rated 4.9 stars over 1.2k trips',
                 excludeSemantics: true,
                 child: const Row(
                   children: [
@@ -711,7 +798,7 @@ class _DriverHeader extends StatelessWidget {
                       size: 14,
                     ),
                     SizedBox(width: RideSpacing.xs),
-                    Text('4.9', style: RideText.captionTabular),
+                    Text('4.9 · 1.2k trips', style: RideText.captionTabular),
                   ],
                 ),
               ),
@@ -752,9 +839,9 @@ class _DriverHeader extends StatelessWidget {
 }
 
 class _DriverAvatar extends StatelessWidget {
-  final String avatarUrl;
+  final String avatarAsset;
 
-  const _DriverAvatar({required this.avatarUrl});
+  const _DriverAvatar({required this.avatarAsset});
 
   @override
   Widget build(BuildContext context) {
@@ -767,14 +854,15 @@ class _DriverAvatar extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: RideColors.surfaceSubtle,
-            border: Border.all(color: RideColors.border),
+            border: Border.all(color: RideColors.border, width: 1.5),
           ),
           clipBehavior: Clip.antiAlias,
-          child: Image.network(
-            avatarUrl,
+          child: Image.asset(
+            avatarAsset,
             fit: BoxFit.cover,
-            cacheWidth: 96,
-            cacheHeight: 96,
+            cacheWidth: 160,
+            cacheHeight: 160,
+            filterQuality: FilterQuality.high,
             semanticLabel: 'Driver Ahsan Malik',
             errorBuilder: (_, _, _) => const Icon(
               Icons.person_rounded,
@@ -807,16 +895,20 @@ class _DriverAvatar extends StatelessWidget {
 }
 
 class _TripSummary extends StatelessWidget {
+  final RidePhase phase;
   final String pickupLabel;
   final String destinationLabel;
   final double distanceKm;
   final int farePkr;
+  final ValueListenable<double>? routeProgress;
 
   const _TripSummary({
+    required this.phase,
     required this.pickupLabel,
     required this.destinationLabel,
     required this.distanceKm,
     required this.farePkr,
+    this.routeProgress,
   });
 
   @override
@@ -829,27 +921,10 @@ class _TripSummary extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: RideColors.accent,
-                ),
-              ),
-              Container(width: 1.5, height: 14, color: RideColors.border),
-              Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: RideColors.textPrimary,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
+          RouteStepIndicator(
+            phase: phase,
+            routeProgress: routeProgress,
+            height: 44,
           ),
           const SizedBox(width: RideSpacing.md),
           Expanded(
