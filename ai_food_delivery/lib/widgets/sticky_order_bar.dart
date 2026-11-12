@@ -1,101 +1,111 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_food_delivery/models/food_item.dart';
 import 'package:ai_food_delivery/theme/app_theme.dart';
+import 'package:ai_food_delivery/widgets/food_network_image.dart';
 
-/// Docked checkout bar shown when a dish is selected from discovery.
+/// Floating espresso-dark dock displaying the active dish photo and checkout pill CTA.
 class StickyOrderBar extends StatelessWidget {
   final FoodItem food;
-  final VoidCallback onContinue;
+  final VoidCallback onCheckout;
 
   const StickyOrderBar({
     super.key,
     required this.food,
-    required this.onContinue,
+    required this.onCheckout,
   });
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        FoodSpacing.md,
-        FoodSpacing.sm,
-        FoodSpacing.sm,
-        FoodSpacing.sm,
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        FoodSpacing.lg,
+        0,
+        FoodSpacing.lg,
+        bottomPadding + FoodSpacing.md,
       ),
-      decoration: BoxDecoration(
-        color: FoodColors.surface,
+      child: Material(
+        color: FoodColors.textPrimary,
         borderRadius: BorderRadius.circular(FoodRadius.pill),
-        border: Border.all(color: FoodColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: FoodColors.shadow,
-            blurRadius: 20,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          ClipOval(
-            child: Image.network(
-              food.imageUrl,
-              width: 44,
-              height: 44,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const SizedBox(
-                width: 44,
-                height: 44,
-                child: ColoredBox(
-                  color: FoodColors.surfaceSubtle,
-                  child: Icon(
-                    Icons.restaurant_rounded,
-                    color: FoodColors.textSecondary,
-                    size: 18,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: FoodSpacing.md),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+        elevation: 10,
+        shadowColor: const Color(0x42171310),
+        child: InkWell(
+          onTap: onCheckout,
+          borderRadius: BorderRadius.circular(FoodRadius.pill),
+          child: Padding(
+            padding: const EdgeInsets.all(FoodSpacing.sm),
+            child: Row(
               children: [
-                Text(
-                  food.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+                ClipOval(
+                  child: FoodNetworkImage(
+                    imageUrl: food.imageUrl,
+                    width: 42,
+                    height: 42,
                   ),
                 ),
-                Text(
-                  '${food.price} · ${food.eta}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.bodySmall,
+                const SizedBox(width: FoodSpacing.md),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        food.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: FoodText.title.copyWith(
+                          color: FoodColors.inkOnDark,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        '${food.restaurant} · ${food.eta}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: FoodText.caption.copyWith(
+                          color: FoodColors.inkOnDark.withValues(alpha: 0.72),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: FoodSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: FoodSpacing.md + 4,
+                    vertical: FoodSpacing.sm + 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: FoodColors.accent,
+                    borderRadius: BorderRadius.circular(FoodRadius.pill),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        food.price,
+                        style: FoodText.tabular.copyWith(
+                          color: FoodColors.inkOnAccent,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(width: FoodSpacing.xs + 2),
+                      const Icon(
+                        CupertinoIcons.arrow_right,
+                        size: 14,
+                        color: FoodColors.inkOnAccent,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: FoodSpacing.sm),
-          FilledButton(
-            onPressed: onContinue,
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Order'),
-                SizedBox(width: FoodSpacing.xs),
-                Icon(Icons.arrow_forward_rounded, size: 18),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
-

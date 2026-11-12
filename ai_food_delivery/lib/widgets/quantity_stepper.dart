@@ -1,17 +1,18 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_food_delivery/theme/app_theme.dart';
 
-/// Compact quantity stepper with accessible touch targets.
+/// Compact quantity stepper with tabular numerals for dish counts.
 class QuantityStepper extends StatelessWidget {
-  final int value;
-  final VoidCallback onAdd;
-  final VoidCallback onRemove;
+  final int quantity;
+  final VoidCallback? onDecrement;
+  final VoidCallback onIncrement;
 
   const QuantityStepper({
     super.key,
-    required this.value,
-    required this.onAdd,
-    required this.onRemove,
+    required this.quantity,
+    required this.onDecrement,
+    required this.onIncrement,
   });
 
   @override
@@ -22,22 +23,24 @@ class QuantityStepper extends StatelessWidget {
         borderRadius: BorderRadius.circular(FoodRadius.pill),
         border: Border.all(color: FoodColors.border),
       ),
+      padding: const EdgeInsets.all(2),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _StepIconButton(
-            icon: Icons.remove_rounded,
+          _StepperButton(
+            icon: CupertinoIcons.minus,
             tooltip: 'Decrease quantity',
-            onTap: value > 1 ? onRemove : null,
+            onTap: onDecrement,
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: FoodSpacing.sm),
-            child: Text(value.toString(), style: FoodText.tabular),
+            padding: const EdgeInsets.symmetric(horizontal: FoodSpacing.md),
+            child: Text('$quantity', style: FoodText.tabular),
           ),
-          _StepIconButton(
-            icon: Icons.add_rounded,
+          _StepperButton(
+            icon: CupertinoIcons.plus,
             tooltip: 'Increase quantity',
-            onTap: onAdd,
+            isPrimary: true,
+            onTap: onIncrement,
           ),
         ],
       ),
@@ -45,32 +48,48 @@ class QuantityStepper extends StatelessWidget {
   }
 }
 
-class _StepIconButton extends StatelessWidget {
+class _StepperButton extends StatelessWidget {
   final IconData icon;
   final String tooltip;
+  final bool isPrimary;
   final VoidCallback? onTap;
 
-  const _StepIconButton({
+  const _StepperButton({
     required this.icon,
     required this.tooltip,
-    required this.onTap,
+    this.isPrimary = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: tooltip,
-      onPressed: onTap,
-      style: IconButton.styleFrom(
-        backgroundColor: Colors.transparent,
-        foregroundColor: onTap == null
-            ? FoodColors.textSecondary
-            : FoodColors.textPrimary,
-        minimumSize: const Size.square(44),
-        side: BorderSide.none,
+    final enabled = onTap != null;
+    final bgColor = !enabled
+        ? Colors.transparent
+        : isPrimary
+            ? FoodColors.textPrimary
+            : FoodColors.surface;
+    final fgColor = !enabled
+        ? FoodColors.textSecondary.withValues(alpha: 0.4)
+        : isPrimary
+            ? FoodColors.inkOnDark
+            : FoodColors.textPrimary;
+
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(FoodRadius.pill),
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: bgColor,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 15, color: fgColor),
+        ),
       ),
-      icon: Icon(icon, size: 18),
     );
   }
 }
-

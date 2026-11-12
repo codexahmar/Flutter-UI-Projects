@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:ai_food_delivery/data/demo_food_data.dart';
 import 'package:ai_food_delivery/models/food_item.dart';
 import 'package:ai_food_delivery/screens/order_confirmation_screen.dart';
@@ -8,7 +11,7 @@ import 'package:ai_food_delivery/widgets/restaurant_card.dart';
 import 'package:ai_food_delivery/widgets/section_header.dart';
 import 'package:ai_food_delivery/widgets/sticky_order_bar.dart';
 
-/// Main menu and restaurant discovery screen.
+/// Editorial food discovery screen with static address pill, bag count badge, and auto-slider.
 class FoodDiscoveryScreen extends StatefulWidget {
   const FoodDiscoveryScreen({super.key});
 
@@ -18,235 +21,565 @@ class FoodDiscoveryScreen extends StatefulWidget {
 
 class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
   final TextEditingController _searchController = TextEditingController();
+  late final PageController _restaurantPageController;
+  Timer? _autoSlideTimer;
 
   int _selectedCategoryIndex = 0;
-  String? _selectedRestaurant;
-  FoodItem? _selectedFood;
-  String _query = '';
+  int? _selectedFoodIndex;
+  int _activeFeaturedPage = 0;
+  String? _selectedRestaurantName;
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _restaurantPageController = PageController(viewportFraction: 0.80);
+    _startAutoSlider();
+  }
 
   @override
   void dispose() {
+    _autoSlideTimer?.cancel();
+    _restaurantPageController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
+  void _startAutoSlider() {
+    _autoSlideTimer?.cancel();
+    _autoSlideTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (!mounted || !_restaurantPageController.hasClients) return;
+      final nextPage =
+          (_activeFeaturedPage + 1) % kFeaturedRestaurants.length;
+      _restaurantPageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 560),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  void _pauseAutoSlider() {
+    _autoSlideTimer?.cancel();
+  }
+
   List<FoodItem> get _filteredFoods {
-    final category = kDemoCategories[_selectedCategoryIndex].label;
-    final needle = _query.trim().toLowerCase();
+    final categoryLabel = kDemoCategories[_selectedCategoryIndex].label;
+    final query = _searchQuery.trim().toLowerCase();
 
     return kDemoFoods.where((food) {
-      final matchesCategory = category == 'All' || food.category == category;
-      final matchesRestaurant =
-          _selectedRestaurant == null || food.restaurant == _selectedRestaurant;
-      final matchesQuery =
-          needle.isEmpty ||
-          food.name.toLowerCase().contains(needle) ||
-          food.restaurant.toLowerCase().contains(needle) ||
-          food.category.toLowerCase().contains(needle);
+      final matchesCategory =
+          categoryLabel == 'All' || food.category == categoryLabel;
+      final matchesRestaurant = _selectedRestaurantName == null ||
+          food.restaurant == _selectedRestaurantName;
+      final matchesQuery = query.isEmpty ||
+          food.name.toLowerCase().contains(query) ||
+          food.restaurant.toLowerCase().contains(query) ||
+          food.description.toLowerCase().contains(query);
       return matchesCategory && matchesRestaurant && matchesQuery;
     }).toList();
   }
 
-  void _clearFilters() {
-    _searchController.clear();
-    setState(() {
-      _query = '';
-      _selectedCategoryIndex = 0;
-      _selectedRestaurant = null;
-      _selectedFood = null;
-    });
-  }
-
-  Future<void> _openCheckout(FoodItem food) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute<void>(
+  void _openCheckout(FoodItem food) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
         builder: (_) => OrderConfirmationScreen(food: food),
       ),
     );
-    if (!mounted) return;
-    setState(() => _selectedFood = null);
+  }
+
+  void _toggleFoodSelection(int globalIndex) {
+    setState(() {
+      _selectedFoodIndex =
+          _selectedFoodIndex == globalIndex ? null : globalIndex;
+    });
+  }
+
+  void _handleBagTap() {
+    if (_selectedFoodIndex == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Select any dish to add it to your bag.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+    _openCheckout(kDemoFoods[_selectedFoodIndex!]);
+  }
+
+  void _toggleRestaurantFilter(String restaurantName) {
+    setState(() {
+      _selectedRestaurantName =
+          _selectedRestaurantName == restaurantName ? null : restaurantName;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final visibleFoods = _filteredFoods;
-    final bottomInset = _selectedFood != null ? 104.0 : FoodSpacing.xl;
+    final selectedFood =
+        _selectedFoodIndex != null ? kDemoFoods[_selectedFoodIndex!] : null;
+    final bagCount = selectedFood == null ? 0 : 1;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
+      backgroundColor: FoodColors.canvas,
       body: Stack(
         children: [
-          SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(
-                FoodSpacing.lg,
-                FoodSpacing.lg,
-                FoodSpacing.lg,
-                bottomInset,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('F-10/2, Islamabad', style: textTheme.bodySmall),
-                  const SizedBox(height: FoodSpacing.xs),
-                  Text(
-                    'Fresh flavors, delivered fast',
-                    style: textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: FoodSpacing.lg),
-                  TextField(
-                    controller: _searchController,
-                    onChanged: (value) => setState(() => _query = value),
-                    textInputAction: TextInputAction.search,
-                    decoration: InputDecoration(
-                      hintText: 'Search dishes or restaurants',
-                      prefixIcon: const Icon(
-                        Icons.search_rounded,
-                        color: FoodColors.textSecondary,
-                      ),
-                      suffixIcon: _query.isEmpty
-                          ? null
-                          : IconButton(
-                              tooltip: 'Clear search',
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _query = '');
-                              },
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                side: BorderSide.none,
+          CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      FoodSpacing.lg,
+                      FoodSpacing.md,
+                      FoodSpacing.lg,
+                      0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    6,
+                                    6,
+                                    FoodSpacing.md + 2,
+                                    6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: FoodColors.surface,
+                                    borderRadius:
+                                        BorderRadius.circular(FoodRadius.pill),
+                                    border:
+                                        Border.all(color: FoodColors.border),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: const BoxDecoration(
+                                          color: FoodColors.accentTint,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          CupertinoIcons.location_solid,
+                                          color: FoodColors.accent,
+                                          size: 15,
+                                        ),
+                                      ),
+                                      const SizedBox(width: FoodSpacing.sm),
+                                      Flexible(
+                                        child: Text(
+                                          'Home · Street 8, F-10/3',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: FoodText.title.copyWith(
+                                            fontSize: 13.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              icon: const Icon(Icons.close_rounded, size: 18),
                             ),
+                            const SizedBox(width: FoodSpacing.md),
+                            Tooltip(
+                              message: bagCount == 0
+                                  ? 'Bag is empty'
+                                  : 'Open checkout bag',
+                              child: InkWell(
+                                onTap: _handleBagTap,
+                                customBorder: const CircleBorder(),
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: FoodColors.surface,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: FoodColors.border,
+                                        ),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: FoodColors.shadow,
+                                            blurRadius: 10,
+                                            offset: Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        CupertinoIcons.bag,
+                                        size: 19,
+                                        color: FoodColors.textPrimary,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: -4,
+                                      right: -3,
+                                      child: AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 180),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 20,
+                                          minHeight: 20,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: bagCount > 0
+                                              ? FoodColors.accent
+                                              : FoodColors.textPrimary,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: FoodColors.canvas,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          '$bagCount',
+                                          style: FoodText.tabular.copyWith(
+                                            fontSize: 11,
+                                            color: FoodColors.inkOnAccent,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: FoodSpacing.xl),
+                        Text(
+                          'Fresh flavors, delivered fast',
+                          style: FoodText.headline,
+                        ),
+                        const SizedBox(height: FoodSpacing.lg),
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.circular(FoodRadius.pill),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: FoodColors.shadow,
+                                blurRadius: 16,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) =>
+                                setState(() => _searchQuery = value),
+                            style: FoodText.body,
+                            decoration: InputDecoration(
+                              hintText: 'Search dishes or kitchens',
+                              prefixIcon: const Icon(
+                                CupertinoIcons.search,
+                                size: 18,
+                                color: FoodColors.textSecondary,
+                              ),
+                              suffixIcon: _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      tooltip: 'Clear search',
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        setState(() => _searchQuery = '');
+                                      },
+                                      icon: const Icon(
+                                        CupertinoIcons.xmark_circle_fill,
+                                        size: 17,
+                                        color: FoodColors.textSecondary,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: FoodSpacing.lg),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: FoodSpacing.lg),
-                  SizedBox(
-                    height: 44,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: kDemoCategories.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(width: FoodSpacing.sm),
-                      itemBuilder: (context, index) {
-                        final category = kDemoCategories[index];
-                        final selected = _selectedCategoryIndex == index;
-                        return _CategoryChip(
-                          category: category,
-                          selected: selected,
-                          onTap: () => setState(() {
-                            _selectedCategoryIndex = index;
-                            _selectedFood = null;
-                          }),
-                        );
-                      },
-                    ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 40,
+                  child: ListView.separated(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: kDemoCategories.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(width: FoodSpacing.sm),
+                    itemBuilder: (context, index) {
+                      final category = kDemoCategories[index];
+                      final isActive = index == _selectedCategoryIndex;
+                      return GestureDetector(
+                        onTap: () =>
+                            setState(() => _selectedCategoryIndex = index),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutCubic,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: FoodSpacing.md + 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? FoodColors.textPrimary
+                                : FoodColors.surface,
+                            borderRadius:
+                                BorderRadius.circular(FoodRadius.pill),
+                            border: Border.all(
+                              color: isActive
+                                  ? FoodColors.textPrimary
+                                  : FoodColors.border,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                category.icon,
+                                size: 14,
+                                color: isActive
+                                    ? FoodColors.inkOnDark
+                                    : FoodColors.textSecondary,
+                              ),
+                              const SizedBox(width: FoodSpacing.xs + 2),
+                              Text(
+                                category.label,
+                                style: FoodText.caption.copyWith(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: isActive
+                                      ? FoodColors.inkOnDark
+                                      : FoodColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: FoodSpacing.xl),
-                  SectionHeader(
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: FoodSpacing.xl)),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
+                  child: SectionHeader(
                     title: 'Featured restaurants',
-                    trailingText: _selectedRestaurant != null
-                        ? 'Show all'
-                        : '${kFeaturedRestaurants.length}',
-                    onTrailingTap: _selectedRestaurant != null
-                        ? () => setState(() => _selectedRestaurant = null)
+                    trailingText:
+                        _selectedRestaurantName != null ? 'Show all' : null,
+                    onTrailingTap: _selectedRestaurantName != null
+                        ? () => setState(() => _selectedRestaurantName = null)
                         : null,
                   ),
-                  const SizedBox(height: FoodSpacing.md),
-                  SizedBox(
-                    height: 190,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: kFeaturedRestaurants.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(width: FoodSpacing.md),
-                      itemBuilder: (context, index) {
-                        final spot = kFeaturedRestaurants[index];
-                        final selected = _selectedRestaurant == spot.name;
-                        return RestaurantCard(
-                          restaurant: spot,
-                          selected: selected,
-                          onTap: () => setState(() {
-                            _selectedRestaurant = selected ? null : spot.name;
-                            _selectedFood = null;
-                          }),
-                        );
-                      },
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: FoodSpacing.md)),
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 214,
+                      child: NotificationListener<UserScrollNotification>(
+                        onNotification: (notification) {
+                          if (notification.direction != ScrollDirection.idle) {
+                            _pauseAutoSlider();
+                          } else {
+                            _startAutoSlider();
+                          }
+                          return false;
+                        },
+                        child: PageView.builder(
+                          controller: _restaurantPageController,
+                          padEnds: false,
+                          clipBehavior: Clip.none,
+                          itemCount: kFeaturedRestaurants.length,
+                          onPageChanged: (index) {
+                            setState(() => _activeFeaturedPage = index);
+                          },
+                          itemBuilder: (context, index) {
+                            final spot = kFeaturedRestaurants[index];
+                            return AnimatedBuilder(
+                              animation: _restaurantPageController,
+                              builder: (context, child) {
+                                double scale = 1.0;
+                                if (_restaurantPageController.hasClients &&
+                                    _restaurantPageController
+                                        .position.haveDimensions) {
+                                  final page =
+                                      _restaurantPageController.page ?? 0.0;
+                                  final delta =
+                                      (page - index).abs().clamp(0.0, 1.0);
+                                  scale = 1.0 - (delta * 0.05);
+                                } else if (index != _activeFeaturedPage) {
+                                  scale = 0.95;
+                                }
+                                return Transform.scale(
+                                  scale: scale,
+                                  alignment: Alignment.centerLeft,
+                                  child: child,
+                                );
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  left: index == 0 ? FoodSpacing.lg : 0,
+                                  right: FoodSpacing.md,
+                                ),
+                                child: RestaurantCard(
+                                  spot: spot,
+                                  isSelected:
+                                      _selectedRestaurantName == spot.name,
+                                  onTap: () =>
+                                      _toggleRestaurantFilter(spot.name),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
+                    const SizedBox(height: FoodSpacing.md),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(kFeaturedRestaurants.length, (i) {
+                        final active = i == _activeFeaturedPage;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 240),
+                          curve: Curves.easeOutCubic,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: active ? 20 : 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: active
+                                ? FoodColors.accent
+                                : FoodColors.border,
+                            borderRadius:
+                                BorderRadius.circular(FoodRadius.pill),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: FoodSpacing.xl)),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
+                  child: SectionHeader(
+                    title: _selectedRestaurantName ?? 'Popular dishes',
                   ),
-                  const SizedBox(height: FoodSpacing.xl),
-                  SectionHeader(
-                    title: _selectedRestaurant ?? 'Menu',
-                    trailingText: '${visibleFoods.length}',
-                  ),
-                  const SizedBox(height: FoodSpacing.md),
-                  if (visibleFoods.isEmpty)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(FoodSpacing.lg),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: FoodSpacing.md)),
+              if (visibleFoods.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
+                    child: Container(
+                      padding: const EdgeInsets.all(FoodSpacing.xl),
                       decoration: BoxDecoration(
                         color: FoodColors.surface,
-                        borderRadius: BorderRadius.circular(FoodRadius.lg),
+                        borderRadius: BorderRadius.circular(FoodRadius.md),
                         border: Border.all(color: FoodColors.border),
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('No matching dishes', style: textTheme.titleMedium),
-                          const SizedBox(height: FoodSpacing.xs),
-                          Text(
-                            'Try clearing filters or searching another craving.',
-                            style: textTheme.bodySmall,
+                          const Icon(
+                            CupertinoIcons.search,
+                            color: FoodColors.textSecondary,
+                            size: 26,
                           ),
-                          const SizedBox(height: FoodSpacing.md),
-                          FilledButton(
-                            onPressed: _clearFilters,
-                            child: const Text('Clear filters'),
+                          const SizedBox(height: FoodSpacing.sm),
+                          Text('No dishes match that filter',
+                              style: FoodText.title),
+                          const SizedBox(height: FoodSpacing.xs),
+                          TextButton(
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchQuery = '';
+                                _selectedCategoryIndex = 0;
+                                _selectedRestaurantName = null;
+                              });
+                            },
+                            child: const Text('Reset filters'),
                           ),
                         ],
                       ),
-                    )
-                  else
-                    ListView.separated(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: visibleFoods.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: FoodSpacing.md),
-                      itemBuilder: (context, index) {
-                        final food = visibleFoods[index];
-                        final selected = _selectedFood?.name == food.name;
-                        return FoodMenuCard(
-                          food: food,
-                          selected: selected,
-                          onTap: () => setState(() {
-                            _selectedFood = selected ? null : food;
-                          }),
-                        );
-                      },
                     ),
-                ],
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
+                  sliver: SliverList.separated(
+                    itemCount: visibleFoods.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(height: FoodSpacing.md),
+                    itemBuilder: (context, index) {
+                      final food = visibleFoods[index];
+                      final globalIndex = kDemoFoods.indexOf(food);
+                      return FoodMenuCard(
+                        food: food,
+                        isSelected: globalIndex == _selectedFoodIndex,
+                        onSelect: () => _toggleFoodSelection(globalIndex),
+                        onOpenCheckout: () {
+                          setState(() => _selectedFoodIndex = globalIndex);
+                          _openCheckout(food);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: bottomPadding + (selectedFood != null ? 108 : 32),
+                ),
               ),
-            ),
+            ],
           ),
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 220),
+            duration: const Duration(milliseconds: 260),
             curve: Curves.easeOutCubic,
-            left: FoodSpacing.lg,
-            right: FoodSpacing.lg,
-            bottom: _selectedFood != null ? FoodSpacing.lg : -110,
-            child: SafeArea(
-              top: false,
-              child: _selectedFood == null
-                  ? const SizedBox.shrink()
-                  : StickyOrderBar(
-                      food: _selectedFood!,
-                      onContinue: () => _openCheckout(_selectedFood!),
-                    ),
+            left: 0,
+            right: 0,
+            bottom: selectedFood != null ? 0 : -130,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: selectedFood != null ? 1 : 0,
+              child: selectedFood != null
+                  ? StickyOrderBar(
+                      food: selectedFood,
+                      onCheckout: () => _openCheckout(selectedFood),
+                    )
+                  : const SizedBox.shrink(),
             ),
           ),
         ],
@@ -254,60 +587,3 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
     );
   }
 }
-
-class _CategoryChip extends StatelessWidget {
-  final FoodCategory category;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _CategoryChip({
-    required this.category,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: selected ? FoodColors.accent : FoodColors.surface,
-      borderRadius: BorderRadius.circular(FoodRadius.pill),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(FoodRadius.pill),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FoodSpacing.lg,
-            vertical: FoodSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(FoodRadius.pill),
-            border: Border.all(
-              color: selected ? FoodColors.accent : FoodColors.border,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                category.icon,
-                size: 16,
-                color: selected ? FoodColors.inkOnAccent : FoodColors.accent,
-              ),
-              const SizedBox(width: FoodSpacing.sm),
-              Text(
-                category.label,
-                style: FoodText.button.copyWith(
-                  fontSize: 13,
-                  color: selected
-                      ? FoodColors.inkOnAccent
-                      : FoodColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-

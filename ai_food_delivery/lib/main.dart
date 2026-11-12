@@ -9,9 +9,9 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark,
       systemNavigationBarColor: FoodColors.canvas,
-      systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 
@@ -24,9 +24,9 @@ class FoodDeliveryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Food Delivery',
+      title: 'Crave',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark(),
+      theme: AppTheme.light(),
       home: const FoodDiscoveryScreen(),
     );
   }

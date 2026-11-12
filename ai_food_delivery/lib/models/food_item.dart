@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Menu dish model displayed in discovery, checkout, and tracking.
+/// Menu dish model displayed across discovery, checkout, and tracking.
 class FoodItem {
   final String name;
   final String restaurant;
@@ -44,6 +44,7 @@ class RestaurantSpot {
   final String name;
   final String cuisine;
   final String eta;
+  final String distance;
   final String imageUrl;
   final double rating;
 
@@ -51,6 +52,7 @@ class RestaurantSpot {
     required this.name,
     required this.cuisine,
     required this.eta,
+    required this.distance,
     required this.imageUrl,
     required this.rating,
   });
@@ -63,4 +65,3 @@ class FoodCategory {
 
   const FoodCategory(this.label, this.icon);
 }
-

@@ -7,7 +7,7 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
-  testWidgets('launches the discovery screen and allows selecting a dish', (
+  testWidgets('launches the discovery screen and renders Pakistani fast food', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const FoodDeliveryApp());
@@ -15,6 +15,6 @@ void main() {
 
     expect(find.text('Fresh flavors, delivered fast'), findsOneWidget);
     expect(find.text('Featured restaurants'), findsOneWidget);
-    expect(find.text('Black Label Wagyu Burger'), findsOneWidget);
+    expect(find.text('Son of a Bun Smash'), findsOneWidget);
   });
 }

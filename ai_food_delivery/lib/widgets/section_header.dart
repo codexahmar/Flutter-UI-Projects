@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ai_food_delivery/theme/app_theme.dart';
 
-/// Quiet section header with optional tabular count or action link.
+/// Clean section heading with an optional interactive trailing action label.
 class SectionHeader extends StatelessWidget {
   final String title;
   final String? trailingText;
@@ -16,40 +16,37 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(child: Text(title, style: textTheme.titleMedium)),
-        if (trailingText != null)
-          onTrailingTap != null
-              ? TextButton(
-                  onPressed: onTrailingTap,
-                  style: TextButton.styleFrom(
-                    foregroundColor: FoodColors.textSecondary,
-                    minimumSize: const Size(0, 40),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: FoodSpacing.sm,
-                    ),
-                  ),
-                  child: Text(
-                    trailingText!,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: FoodColors.accent,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                )
-              : Text(
-                  trailingText!,
-                  style: FoodText.tabular.copyWith(
-                    color: FoodColors.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+        Expanded(
+          child: Text(
+            title,
+            style: FoodText.title.copyWith(fontSize: 18),
+          ),
+        ),
+        if (trailingText != null && onTrailingTap != null)
+          GestureDetector(
+            onTap: onTrailingTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FoodSpacing.md,
+                vertical: FoodSpacing.xs + 2,
+              ),
+              decoration: BoxDecoration(
+                color: FoodColors.accentTint,
+                borderRadius: BorderRadius.circular(FoodRadius.pill),
+              ),
+              child: Text(
+                trailingText!,
+                style: FoodText.caption.copyWith(
+                  color: FoodColors.accentInk,
+                  fontWeight: FontWeight.w700,
                 ),
+              ),
+            ),
+          ),
       ],
     );
   }
 }
-
