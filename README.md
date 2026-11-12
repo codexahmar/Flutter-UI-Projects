@@ -11,6 +11,11 @@ A curated showcase of handcrafted **Flutter UI concepts, micro-interactions, and
 | **Onboarding UI** | Scroll-driven `PageView` parallax, swipe rim light, rolling step odometer & morphing progress CTA | [Browse Code](./Onboarding/lib) | [README](./Onboarding/README.md) |
 | **Pinterest UI Clone** | Two-column staggered masonry wall, shimmer loading skeletons, Hero pin viewer & tab navigation | [Browse Code](./Pinterest%20UI/lib) | [README](./Pinterest%20UI/README.md) |
 | **Furniture Marketplace UI** | Architectural Dribbble-inspired concept, fluid Hero flights, tactile micro-interactions & floating nav bar | [Browse Code](./Furniture%20Marketplace/lib) | [README](./Furniture%20Marketplace/README.md) |
+| **Solaris — Solar System 3D** | Interactive 3D planetary globe, Cupertino & Material 3 adaptive UI, flight paths & waypoints | [Browse Code](./Solar%20System%203D/lib) | [README](./Solar%20System%203D/README.md) |
+| **AuraFit — Fitness UI** | Hydration wave chart (`fl_chart`), training plans, 360° mood dial & custom calendar routines | [Browse Code](./AuraFit/lib) | [README](./AuraFit/README.md) |
+| **CryptoVista — Portfolio UI** | Web3 glassmorphic bottom nav, wallet visibility toggle, Light/Dark/System modes & analytics cards | [Browse Code](./Crypto%20Portfolio/lib) | [README](./Crypto%20Portfolio/README.md) |
+| **StripeCart — Luxury Shop** | Cyber-luxury e-commerce UI, live color-swatch tinting, frosted nav, promo engine & Stripe checkout | [Browse Code](./StripeCart/lib) | [README](./StripeCart/README.md) |
+| **Asma-ul-Husna UI** | Synchronized Arabic/Urdu 99 Names player with `just_audio_background` & staggered splash | [Browse Code](./Asma%20Ul%20Husna/lib) | [README](./Asma%20Ul%20Husna/README.md) |
 
 ---
 
@@ -77,6 +82,64 @@ A modern, minimal Flutter e-commerce UI concept for an architectural furniture m
 - **Editorial & Tactile Interactions**: Fluid Hero product transitions, animated CTA micro-interactions, top in-app notification banner, architectural typography, and a floating navigation bar.
 
 **[Explore Furniture Marketplace Code →](./Furniture%20Marketplace/lib)** · **[Full Project README](./Furniture%20Marketplace/README.md)**
+
+---
+
+### 6. [Solaris — Solar System 3D](./Solar%20System%203D/lib)
+
+An interactive 3D solar system and planetary encyclopedia powered by `flutter_earth_globe`, featuring platform-native **Apple Cupertino** (iOS) and **Material 3** (Android) interfaces.
+
+- **3D Globe & Waypoints**: 360° celestial textures across the Solar System, animated sub-orbital trajectory arcs, real-time ground coordinates, and adaptive multi-pane tablet/desktop layouts.
+
+**[Explore Solar System 3D Code →](./Solar%20System%203D/lib)** · **[Full Project README](./Solar%20System%203D/README.md)**
+
+---
+
+### 7. [AuraFit — Smart Fitness & Wellness Tracker](./AuraFit/lib)
+
+A responsive fitness and wellness UI combining structured workout scheduling, dynamic hydration & calorie tracking, and mindful mood logging.
+
+<p>
+  <img src="AuraFit/screenshots/homeScreen.png" width="190" alt="AuraFit Home & Nutrition" />
+  <img src="AuraFit/screenshots/planScreen.png" width="190" alt="AuraFit Training Plan" />
+  <img src="AuraFit/screenshots/moodScreen.png" width="190" alt="AuraFit Mood Dial" />
+</p>
+
+- **Data Viz & Custom Controls**: Interactive `fl_chart` fluid hydration wave, `table_calendar` routine picker, drag-and-drop workout plans, and a 360° custom-painted mood dial.
+
+**[Explore AuraFit Code →](./AuraFit/lib)** · **[Full Project README](./AuraFit/README.md)**
+
+---
+
+### 8. [CryptoVista — Crypto Portfolio UI](./Crypto%20Portfolio/lib)
+
+A Flutter crypto-wallet showcase focused on clean UI architecture, adaptive `Light` / `Dark` / `System` theming, and staged screen transitions.
+
+- **Web3 Wallet Experience**: Glassmorphic `Web3BottomNavBar`, balance visibility toggle, quick address copy, analytics cards, and responsive dashboard layouts.
+
+**[Explore Crypto Portfolio Code →](./Crypto%20Portfolio/lib)** · **[Full Project README](./Crypto%20Portfolio/README.md)**
+
+---
+
+### 9. [StripeCart — Luxury E-Commerce UI](./StripeCart/lib)
+
+An editorial luxury shopping app built with Flutter & GetX featuring cyber-luxury dark/light palettes, frosted glass navigation, and Stripe PaymentSheet checkout.
+
+<img src="StripeCart/screenshot/stripecart.png" width="420" alt="StripeCart App Preview" />
+
+- **Interactive Showcase & Checkout**: Dynamic color-swatch background tinting, size-scaling fitting preview, promo code engine (`CODEX20`), wishlist, and `flutter_stripe` PaymentSheet integration.
+
+**[Explore StripeCart Code →](./StripeCart/lib)** · **[Full Project README](./StripeCart/README.md)**
+
+---
+
+### 10. [Asma-ul-Husna UI (99 Names of Allah)](./Asma%20Ul%20Husna/lib)
+
+A spiritual Flutter UI pairing Arabic & Urdu calligraphy (`Amiri`, `Noto Nastaliq Urdu`, `Poppins`) with synchronized audio recitation and lock-screen playback.
+
+- **Audio & Staggered Motion**: Real-time name/timing sync via `just_audio` & `just_audio_background`, tap-to-skip navigation, and custom staggered splash entrance animations.
+
+**[Explore Asma-ul-Husna Code →](./Asma%20Ul%20Husna/lib)** · **[Full Project README](./Asma%20Ul%20Husna/README.md)**
 
 ---
 
