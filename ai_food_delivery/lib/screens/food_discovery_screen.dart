@@ -11,7 +11,7 @@ import 'package:ai_food_delivery/widgets/restaurant_card.dart';
 import 'package:ai_food_delivery/widgets/section_header.dart';
 import 'package:ai_food_delivery/widgets/sticky_order_bar.dart';
 
-/// Editorial food discovery screen with static address pill, bag count badge, and auto-slider.
+/// Editorial food discovery screen with isolated auto-slider and responsive controls.
 class FoodDiscoveryScreen extends StatefulWidget {
   const FoodDiscoveryScreen({super.key});
 
@@ -21,45 +21,16 @@ class FoodDiscoveryScreen extends StatefulWidget {
 
 class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
   final TextEditingController _searchController = TextEditingController();
-  late final PageController _restaurantPageController;
-  Timer? _autoSlideTimer;
 
   int _selectedCategoryIndex = 0;
   int? _selectedFoodIndex;
-  int _activeFeaturedPage = 0;
   String? _selectedRestaurantName;
   String _searchQuery = '';
 
   @override
-  void initState() {
-    super.initState();
-    _restaurantPageController = PageController(viewportFraction: 0.80);
-    _startAutoSlider();
-  }
-
-  @override
   void dispose() {
-    _autoSlideTimer?.cancel();
-    _restaurantPageController.dispose();
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _startAutoSlider() {
-    _autoSlideTimer?.cancel();
-    _autoSlideTimer = Timer.periodic(const Duration(seconds: 2), (_) {
-      if (!mounted || !_restaurantPageController.hasClients) return;
-      final nextPage = (_activeFeaturedPage + 1) % kFeaturedRestaurants.length;
-      _restaurantPageController.animateToPage(
-        nextPage,
-        duration: const Duration(milliseconds: 860),
-        curve: Curves.easeOutCubic,
-      );
-    });
-  }
-
-  void _pauseAutoSlider() {
-    _autoSlideTimer?.cancel();
   }
 
   List<FoodItem> get _filteredFoods {
@@ -69,11 +40,9 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
     return kDemoFoods.where((food) {
       final matchesCategory =
           categoryLabel == 'All' || food.category == categoryLabel;
-      final matchesRestaurant =
-          _selectedRestaurantName == null ||
+      final matchesRestaurant = _selectedRestaurantName == null ||
           food.restaurant == _selectedRestaurantName;
-      final matchesQuery =
-          query.isEmpty ||
+      final matchesQuery = query.isEmpty ||
           food.name.toLowerCase().contains(query) ||
           food.restaurant.toLowerCase().contains(query) ||
           food.description.toLowerCase().contains(query);
@@ -83,7 +52,9 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
 
   Future<void> _openCheckout(FoodItem food) async {
     final didPlaceOrder = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => OrderConfirmationScreen(food: food)),
+      MaterialPageRoute(
+        builder: (_) => OrderConfirmationScreen(food: food),
+      ),
     );
     if (didPlaceOrder == true && mounted) {
       setState(() => _selectedFoodIndex = null);
@@ -92,9 +63,8 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
 
   void _toggleFoodSelection(int globalIndex) {
     setState(() {
-      _selectedFoodIndex = _selectedFoodIndex == globalIndex
-          ? null
-          : globalIndex;
+      _selectedFoodIndex =
+          _selectedFoodIndex == globalIndex ? null : globalIndex;
     });
   }
 
@@ -113,18 +83,16 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
 
   void _toggleRestaurantFilter(String restaurantName) {
     setState(() {
-      _selectedRestaurantName = _selectedRestaurantName == restaurantName
-          ? null
-          : restaurantName;
+      _selectedRestaurantName =
+          _selectedRestaurantName == restaurantName ? null : restaurantName;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final visibleFoods = _filteredFoods;
-    final selectedFood = _selectedFoodIndex != null
-        ? kDemoFoods[_selectedFoodIndex!]
-        : null;
+    final selectedFood =
+        _selectedFoodIndex != null ? kDemoFoods[_selectedFoodIndex!] : null;
     final bagCount = selectedFood == null ? 0 : 1;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
@@ -161,12 +129,10 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: FoodColors.surface,
-                                    borderRadius: BorderRadius.circular(
-                                      FoodRadius.pill,
-                                    ),
-                                    border: Border.all(
-                                      color: FoodColors.border,
-                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(FoodRadius.pill),
+                                    border:
+                                        Border.all(color: FoodColors.border),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -223,8 +189,8 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                                         boxShadow: const [
                                           BoxShadow(
                                             color: FoodColors.shadow,
-                                            blurRadius: 10,
-                                            offset: Offset(0, 3),
+                                            blurRadius: 8,
+                                            offset: Offset(0, 2),
                                           ),
                                         ],
                                       ),
@@ -238,9 +204,8 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                                       top: -4,
                                       right: -3,
                                       child: AnimatedContainer(
-                                        duration: const Duration(
-                                          milliseconds: 180,
-                                        ),
+                                        duration:
+                                            const Duration(milliseconds: 120),
                                         constraints: const BoxConstraints(
                                           minWidth: 20,
                                           minHeight: 20,
@@ -282,14 +247,13 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                         const SizedBox(height: FoodSpacing.lg),
                         Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              FoodRadius.pill,
-                            ),
+                            borderRadius:
+                                BorderRadius.circular(FoodRadius.pill),
                             boxShadow: const [
                               BoxShadow(
                                 color: FoodColors.shadow,
-                                blurRadius: 16,
-                                offset: Offset(0, 4),
+                                blurRadius: 10,
+                                offset: Offset(0, 3),
                               ),
                             ],
                           ),
@@ -332,9 +296,8 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                 child: SizedBox(
                   height: 40,
                   child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: FoodSpacing.lg,
-                    ),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
                     scrollDirection: Axis.horizontal,
                     itemCount: kDemoCategories.length,
                     separatorBuilder: (_, _) =>
@@ -346,8 +309,8 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                         onTap: () =>
                             setState(() => _selectedCategoryIndex = index),
                         child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          curve: Curves.easeOutCubic,
+                          duration: const Duration(milliseconds: 120),
+                          curve: Curves.easeOut,
                           padding: const EdgeInsets.symmetric(
                             horizontal: FoodSpacing.md + 2,
                           ),
@@ -355,9 +318,8 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                             color: isActive
                                 ? FoodColors.textPrimary
                                 : FoodColors.surface,
-                            borderRadius: BorderRadius.circular(
-                              FoodRadius.pill,
-                            ),
+                            borderRadius:
+                                BorderRadius.circular(FoodRadius.pill),
                             border: Border.all(
                               color: isActive
                                   ? FoodColors.textPrimary
@@ -396,14 +358,12 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
               const SliverToBoxAdapter(child: SizedBox(height: FoodSpacing.xl)),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: FoodSpacing.lg,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
                   child: SectionHeader(
                     title: 'Featured restaurants',
-                    trailingText: _selectedRestaurantName != null
-                        ? 'Show all'
-                        : null,
+                    trailingText:
+                        _selectedRestaurantName != null ? 'Show all' : null,
                     onTrailingTap: _selectedRestaurantName != null
                         ? () => setState(() => _selectedRestaurantName = null)
                         : null,
@@ -412,102 +372,18 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
               ),
               const SliverToBoxAdapter(child: SizedBox(height: FoodSpacing.md)),
               SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 214,
-                      child: NotificationListener<UserScrollNotification>(
-                        onNotification: (notification) {
-                          if (notification.direction != ScrollDirection.idle) {
-                            _pauseAutoSlider();
-                          } else {
-                            _startAutoSlider();
-                          }
-                          return false;
-                        },
-                        child: PageView.builder(
-                          controller: _restaurantPageController,
-                          padEnds: false,
-                          clipBehavior: Clip.none,
-                          itemCount: kFeaturedRestaurants.length,
-                          onPageChanged: (index) {
-                            setState(() => _activeFeaturedPage = index);
-                          },
-                          itemBuilder: (context, index) {
-                            final spot = kFeaturedRestaurants[index];
-                            return AnimatedBuilder(
-                              animation: _restaurantPageController,
-                              builder: (context, child) {
-                                double scale = 1.0;
-                                if (_restaurantPageController.hasClients &&
-                                    _restaurantPageController
-                                        .position
-                                        .haveDimensions) {
-                                  final page =
-                                      _restaurantPageController.page ?? 0.0;
-                                  final delta = (page - index).abs().clamp(
-                                    0.0,
-                                    1.0,
-                                  );
-                                  scale = 1.0 - (delta * 0.05);
-                                } else if (index != _activeFeaturedPage) {
-                                  scale = 0.95;
-                                }
-                                return Transform.scale(
-                                  scale: scale,
-                                  alignment: Alignment.centerLeft,
-                                  child: child,
-                                );
-                              },
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                  left: index == 0 ? FoodSpacing.lg : 0,
-                                  right: FoodSpacing.md,
-                                ),
-                                child: RestaurantCard(
-                                  spot: spot,
-                                  isSelected:
-                                      _selectedRestaurantName == spot.name,
-                                  onTap: () =>
-                                      _toggleRestaurantFilter(spot.name),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: FoodSpacing.md),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(kFeaturedRestaurants.length, (i) {
-                        final active = i == _activeFeaturedPage;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 240),
-                          curve: Curves.easeOutCubic,
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          width: active ? 20 : 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: active
-                                ? FoodColors.accent
-                                : FoodColors.border,
-                            borderRadius: BorderRadius.circular(
-                              FoodRadius.pill,
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
+                child: RepaintBoundary(
+                  child: _FeaturedRestaurantsSlider(
+                    selectedRestaurantName: _selectedRestaurantName,
+                    onRestaurantTap: _toggleRestaurantFilter,
+                  ),
                 ),
               ),
               const SliverToBoxAdapter(child: SizedBox(height: FoodSpacing.xl)),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: FoodSpacing.lg,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
                   child: SectionHeader(
                     title: _selectedRestaurantName ?? 'Popular dishes',
                   ),
@@ -517,9 +393,8 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
               if (visibleFoods.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: FoodSpacing.lg,
-                    ),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
                     child: Container(
                       padding: const EdgeInsets.all(FoodSpacing.xl),
                       decoration: BoxDecoration(
@@ -535,10 +410,8 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                             size: 26,
                           ),
                           const SizedBox(height: FoodSpacing.sm),
-                          Text(
-                            'No dishes match that filter',
-                            style: FoodText.title,
-                          ),
+                          Text('No dishes match that filter',
+                              style: FoodText.title),
                           const SizedBox(height: FoodSpacing.xs),
                           TextButton(
                             onPressed: () {
@@ -558,9 +431,8 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: FoodSpacing.lg,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: FoodSpacing.lg),
                   sliver: SliverList.separated(
                     itemCount: visibleFoods.length,
                     separatorBuilder: (_, _) =>
@@ -568,14 +440,16 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
                     itemBuilder: (context, index) {
                       final food = visibleFoods[index];
                       final globalIndex = kDemoFoods.indexOf(food);
-                      return FoodMenuCard(
-                        food: food,
-                        isSelected: globalIndex == _selectedFoodIndex,
-                        onSelect: () => _toggleFoodSelection(globalIndex),
-                        onOpenCheckout: () {
-                          setState(() => _selectedFoodIndex = globalIndex);
-                          _openCheckout(food);
-                        },
+                      return RepaintBoundary(
+                        child: FoodMenuCard(
+                          food: food,
+                          isSelected: globalIndex == _selectedFoodIndex,
+                          onSelect: () => _toggleFoodSelection(globalIndex),
+                          onOpenCheckout: () {
+                            setState(() => _selectedFoodIndex = globalIndex);
+                            _openCheckout(food);
+                          },
+                        ),
                       );
                     },
                   ),
@@ -588,24 +462,133 @@ class _FoodDiscoveryScreenState extends State<FoodDiscoveryScreen> {
             ],
           ),
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 260),
+            duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
             left: 0,
             right: 0,
             bottom: selectedFood != null ? 0 : -130,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 200),
-              opacity: selectedFood != null ? 1 : 0,
-              child: selectedFood != null
-                  ? StickyOrderBar(
-                      food: selectedFood,
-                      onCheckout: () => _openCheckout(selectedFood),
-                    )
-                  : const SizedBox.shrink(),
-            ),
+            child: selectedFood != null
+                ? StickyOrderBar(
+                    food: selectedFood,
+                    onCheckout: () => _openCheckout(selectedFood),
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Self-contained featured restaurant carousel so auto-slide ticks never rebuild the full screen.
+class _FeaturedRestaurantsSlider extends StatefulWidget {
+  final String? selectedRestaurantName;
+  final ValueChanged<String> onRestaurantTap;
+
+  const _FeaturedRestaurantsSlider({
+    required this.selectedRestaurantName,
+    required this.onRestaurantTap,
+  });
+
+  @override
+  State<_FeaturedRestaurantsSlider> createState() =>
+      _FeaturedRestaurantsSliderState();
+}
+
+class _FeaturedRestaurantsSliderState
+    extends State<_FeaturedRestaurantsSlider> {
+  late final PageController _pageController;
+  Timer? _autoSlideTimer;
+  int _activePage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.80);
+    _startAutoSlider();
+  }
+
+  @override
+  void dispose() {
+    _autoSlideTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _startAutoSlider() {
+    _autoSlideTimer?.cancel();
+    _autoSlideTimer = Timer.periodic(const Duration(milliseconds: 1400), (_) {
+      if (!mounted || !_pageController.hasClients) return;
+      final nextPage = (_activePage + 1) % kFeaturedRestaurants.length;
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  void _pauseAutoSlider() {
+    _autoSlideTimer?.cancel();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 214,
+          child: NotificationListener<UserScrollNotification>(
+            onNotification: (notification) {
+              if (notification.direction != ScrollDirection.idle) {
+                _pauseAutoSlider();
+              } else {
+                _startAutoSlider();
+              }
+              return false;
+            },
+            child: PageView.builder(
+              controller: _pageController,
+              padEnds: false,
+              clipBehavior: Clip.none,
+              itemCount: kFeaturedRestaurants.length,
+              onPageChanged: (index) => setState(() => _activePage = index),
+              itemBuilder: (context, index) {
+                final spot = kFeaturedRestaurants[index];
+                return Padding(
+                  padding: EdgeInsets.only(
+                    left: index == 0 ? FoodSpacing.lg : 0,
+                    right: FoodSpacing.md,
+                  ),
+                  child: RestaurantCard(
+                    spot: spot,
+                    isSelected: widget.selectedRestaurantName == spot.name,
+                    onTap: () => widget.onRestaurantTap(spot.name),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: FoodSpacing.md),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(kFeaturedRestaurants.length, (i) {
+            final active = i == _activePage;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: active ? 20 : 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: active ? FoodColors.accent : FoodColors.border,
+                borderRadius: BorderRadius.circular(FoodRadius.pill),
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }

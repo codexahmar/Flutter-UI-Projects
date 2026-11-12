@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_food_delivery/models/food_item.dart';
 import 'package:ai_food_delivery/theme/app_theme.dart';
+import 'package:ai_food_delivery/widgets/food_network_image.dart';
 
 /// Live courier status bottom sheet harmonized strictly to the 3-color app palette.
 class DeliveryStatusSheet extends StatelessWidget {
@@ -133,26 +134,13 @@ class DeliveryStatusSheet extends StatelessWidget {
             ),
             child: Row(
               children: [
-                ClipOval(
-                  child: Image.network(
-                    'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=400&auto=format&fit=crop',
+                const ClipOval(
+                  child: FoodNetworkImage(
+                    imageUrl:
+                        'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=400&auto=format&fit=crop',
                     width: 44,
                     height: 44,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const SizedBox(
-                      width: 44,
-                      height: 44,
-                      child: ColoredBox(
-                        color: FoodColors.surfaceSubtle,
-                        child: Center(
-                          child: Icon(
-                            CupertinoIcons.person_fill,
-                            size: 18,
-                            color: FoodColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ),
+                    fallbackIcon: CupertinoIcons.person_fill,
                   ),
                 ),
                 const SizedBox(width: FoodSpacing.md),

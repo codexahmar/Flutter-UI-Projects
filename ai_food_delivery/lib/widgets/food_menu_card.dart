@@ -24,8 +24,8 @@ class FoodMenuCard extends StatelessWidget {
     return GestureDetector(
       onTap: onOpenCheckout,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
         decoration: BoxDecoration(
           color: FoodColors.surface,
           borderRadius: BorderRadius.circular(FoodRadius.lg),
@@ -36,8 +36,8 @@ class FoodMenuCard extends StatelessWidget {
           boxShadow: const [
             BoxShadow(
               color: FoodColors.shadow,
-              blurRadius: 16,
-              offset: Offset(0, 4),
+              blurRadius: 10,
+              offset: Offset(0, 3),
             ),
           ],
         ),

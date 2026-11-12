@@ -56,53 +56,53 @@ abstract final class FoodColors {
 
 /// Disciplined Plus Jakarta Sans typography scale restricted to medium & bold weights.
 abstract final class FoodText {
-  static TextStyle get headline => GoogleFonts.plusJakartaSans(
-        color: FoodColors.textPrimary,
-        fontSize: 27,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.85,
-        height: 1.14,
-      );
+  static final TextStyle headline = GoogleFonts.plusJakartaSans(
+    color: FoodColors.textPrimary,
+    fontSize: 27,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.85,
+    height: 1.14,
+  );
 
-  static TextStyle get title => GoogleFonts.plusJakartaSans(
-        color: FoodColors.textPrimary,
-        fontSize: 17,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.35,
-        height: 1.24,
-      );
+  static final TextStyle title = GoogleFonts.plusJakartaSans(
+    color: FoodColors.textPrimary,
+    fontSize: 17,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.35,
+    height: 1.24,
+  );
 
-  static TextStyle get body => GoogleFonts.plusJakartaSans(
-        color: FoodColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        letterSpacing: -0.1,
-        height: 1.42,
-      );
+  static final TextStyle body = GoogleFonts.plusJakartaSans(
+    color: FoodColors.textPrimary,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.1,
+    height: 1.42,
+  );
 
-  static TextStyle get caption => GoogleFonts.plusJakartaSans(
-        color: FoodColors.textSecondary,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0,
-        height: 1.35,
-      );
+  static final TextStyle caption = GoogleFonts.plusJakartaSans(
+    color: FoodColors.textSecondary,
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.35,
+  );
 
-  static TextStyle get tabular => GoogleFonts.plusJakartaSans(
-        color: FoodColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.15,
-        height: 1.2,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      );
+  static final TextStyle tabular = GoogleFonts.plusJakartaSans(
+    color: FoodColors.textPrimary,
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.15,
+    height: 1.2,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
 
-  static TextStyle get button => GoogleFonts.plusJakartaSans(
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.2,
-        height: 1.2,
-      );
+  static final TextStyle button = GoogleFonts.plusJakartaSans(
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    height: 1.2,
+  );
 }
 
 abstract final class AppTheme {
