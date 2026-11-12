@@ -1,30 +1,111 @@
 import 'package:flutter/material.dart';
 import 'package:ride_tracking/app_theme.dart';
 
-enum RidePhase { searching, matched, arriving, arrived }
+enum RidePhase {
+  selecting,
+  searching,
+  matched,
+  arriving,
+  arrived,
+  inTrip,
+  completed,
+}
 
-typedef RideStatus = ({RidePhase phase, int eta});
+enum StopField { pickup, destination }
 
-/// Floating status header putting the live answer (ETA or arrival state) first.
+typedef RideStatus = ({
+  RidePhase phase,
+  int eta,
+  double remainingKm,
+  bool isBoarding,
+});
+
+/// Minimal floating status pill showing route setup, live ETA, PIN, and drop-off state.
 class RideStatusCard extends StatelessWidget {
   final RideStatus status;
+  final StopField activeField;
+  final String pickupLabel;
+  final String? destinationLabel;
+  final double? tripDistanceKm;
+  final int? farePkr;
 
-  const RideStatusCard({super.key, required this.status});
+  const RideStatusCard({
+    super.key,
+    required this.status,
+    required this.activeField,
+    required this.pickupLabel,
+    required this.destinationLabel,
+    this.tripDistanceKm,
+    this.farePkr,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final km = (tripDistanceKm ?? 0).toStringAsFixed(1);
+    final remaining = status.remainingKm.toStringAsFixed(1);
+
     final (title, subtitle) = switch (status.phase) {
-      RidePhase.searching => ('Finding a driver', 'Checking nearby vehicles…'),
-      RidePhase.matched => ('Driver matched', 'Accepted your ride'),
-      RidePhase.arriving => ('Driver arriving', 'On the way to pickup'),
-      RidePhase.arrived => ('Driver arrived', 'Waiting at pickup point'),
+      RidePhase.selecting when destinationLabel == null => (
+        activeField == StopField.pickup
+            ? 'Set pickup on map'
+            : 'Set destination on map',
+        activeField == StopField.pickup
+            ? 'Tap any street to move pickup'
+            : 'Tap map or pick a drop-off below',
+      ),
+      RidePhase.selecting => (
+        'Route ready',
+        '$pickupLabel → $destinationLabel · $km km',
+      ),
+      RidePhase.searching => (
+        'Finding your driver',
+        '3 nearby drivers near $pickupLabel',
+      ),
+      RidePhase.matched => ('Driver on the way', 'Heading to $pickupLabel'),
+      RidePhase.arriving => ('Arriving soon', 'Coming to $pickupLabel'),
+      RidePhase.arrived => (
+        'Driver has arrived',
+        'Share PIN 4920 to board at $pickupLabel',
+      ),
+      RidePhase.inTrip when status.isBoarding => (
+        'Getting in the car',
+        'Starting trip from $pickupLabel',
+      ),
+      RidePhase.inTrip => (
+        'On trip to $destinationLabel',
+        '$remaining km left · Heading to drop-off',
+      ),
+      RidePhase.completed => (
+        'You have arrived',
+        'Dropped off at $destinationLabel',
+      ),
     };
 
+    final showTrailing =
+        status.phase != RidePhase.searching &&
+        !(status.phase == RidePhase.selecting && destinationLabel == null);
+
     return Container(
-      padding: const EdgeInsets.all(RideSpacing.lg),
+      padding: const EdgeInsets.symmetric(
+        horizontal: RideSpacing.lg,
+        vertical: RideSpacing.md,
+      ),
       decoration: RideTheme.cardDecoration,
       child: Row(
         children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color:
+                  status.phase == RidePhase.selecting &&
+                      destinationLabel == null
+                  ? RideColors.textSecondary
+                  : RideColors.accent,
+            ),
+          ),
+          const SizedBox(width: RideSpacing.md),
           Expanded(
             child: AnimatedSwitcher(
               duration: MediaQuery.disableAnimationsOf(context)
@@ -35,20 +116,34 @@ class RideStatusCard extends StatelessWidget {
                 children: [...previous, ?current],
               ),
               child: Column(
-                key: ValueKey(status.phase),
+                key: ValueKey(
+                  '${status.phase}-${status.isBoarding}-${activeField.name}-${destinationLabel ?? ''}-$pickupLabel',
+                ),
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(title, style: RideText.title),
+                  Text(
+                    title,
+                    style: RideText.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: RideSpacing.xs),
-                  Text(subtitle, style: RideText.caption),
+                  Text(
+                    subtitle,
+                    style: RideText.caption.copyWith(
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
           ),
-          if (status.phase != RidePhase.searching) ...[
+          if (showTrailing) ...[
             const SizedBox(width: RideSpacing.md),
-            _StatusTrailing(status: status),
+            _StatusTrailing(status: status, farePkr: farePkr),
           ],
         ],
       ),
@@ -58,47 +153,34 @@ class RideStatusCard extends StatelessWidget {
 
 class _StatusTrailing extends StatelessWidget {
   final RideStatus status;
+  final int? farePkr;
 
-  const _StatusTrailing({required this.status});
+  const _StatusTrailing({required this.status, required this.farePkr});
 
   @override
   Widget build(BuildContext context) {
+    if (status.phase == RidePhase.selecting && farePkr != null) {
+      return _StatusPill(label: 'PKR $farePkr');
+    }
+
     if (status.phase == RidePhase.arrived) {
       return Semantics(
-        label: 'Driver is here',
+        label: 'Driver is here, ride PIN 4920',
         excludeSemantics: true,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: RideSpacing.md,
-            vertical: RideSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: RideColors.accentTint,
-            borderRadius: BorderRadius.circular(RideRadius.pill),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.check_rounded,
-                size: 16,
-                color: RideColors.accent,
-              ),
-              const SizedBox(width: RideSpacing.xs),
-              Text(
-                'Here',
-                style: RideText.captionTabular.copyWith(
-                  color: RideColors.accent,
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: const _StatusPill(label: 'PIN 4920', highlighted: true),
+      );
+    }
+
+    if (status.phase == RidePhase.completed) {
+      return Semantics(
+        label: 'Ride completed and fare paid',
+        excludeSemantics: true,
+        child: const _StatusPill(label: 'Paid', highlighted: true),
       );
     }
 
     return Semantics(
-      label: '${status.eta} minutes away',
+      label: '${status.eta} minutes remaining',
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -112,6 +194,34 @@ class _StatusTrailing extends StatelessWidget {
           const SizedBox(width: RideSpacing.xs),
           const Text('min', style: RideText.caption),
         ],
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  final String label;
+  final bool highlighted;
+
+  const _StatusPill({required this.label, this.highlighted = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: RideSpacing.md,
+        vertical: RideSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: highlighted ? RideColors.accentTint : RideColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(RideRadius.pill),
+        border: highlighted ? null : Border.all(color: RideColors.border),
+      ),
+      child: Text(
+        label,
+        style: RideText.captionTabular.copyWith(
+          color: highlighted ? RideColors.accent : RideColors.textPrimary,
+        ),
       ),
     );
   }
