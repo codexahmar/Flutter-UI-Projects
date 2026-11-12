@@ -21,16 +21,17 @@ void main() {
     await tester.pumpWidget(const UIForgeApp());
     await tester.pump();
 
-    expect(find.text('UIForge AI'), findsOneWidget);
     expect(find.text(kOnboardingSlides[0].title), findsOneWidget);
-    expect(find.text('01 · ${kOnboardingSlides[0].stageLabel}'), findsOneWidget);
+    expect(find.text('01'), findsOneWidget);
+    expect(find.text(kOnboardingSlides[0].stageLabel), findsOneWidget);
     expect(find.text('Skip'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.arrow_forward_rounded));
     await _pumpTransition(tester);
 
     expect(find.text(kOnboardingSlides[1].title), findsOneWidget);
-    expect(find.text('02 · ${kOnboardingSlides[1].stageLabel}'), findsOneWidget);
+    expect(find.text('02'), findsOneWidget);
+    expect(find.text(kOnboardingSlides[1].stageLabel), findsOneWidget);
   });
 
   testWidgets('Skip jumps to final slide and opens completion sheet', (

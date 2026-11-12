@@ -104,12 +104,15 @@ class _OnboardingSlideViewState extends State<OnboardingSlideView>
                     1.0,
                   ));
 
+          final stageOffset = reduceMotion
+              ? Offset.zero
+              : Offset(-delta * 6, absDelta * 8);
           final titleOffset = reduceMotion
               ? Offset.zero
-              : Offset(-delta * 10, absDelta * 10);
+              : Offset(-delta * 10, absDelta * 12);
           final bodyOffset = reduceMotion
               ? Offset.zero
-              : Offset(delta * 14, absDelta * 16);
+              : Offset(delta * 14, absDelta * 18);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,11 +133,14 @@ class _OnboardingSlideViewState extends State<OnboardingSlideView>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '0${widget.index + 1} · ${widget.slide.stageLabel}',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: widget.slide.palette.accent,
-                        fontWeight: FontWeight.w700,
+                    Transform.translate(
+                      offset: stageOffset,
+                      child: Text(
+                        widget.slide.stageLabel,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: widget.slide.palette.accent,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const SizedBox(height: OnboardingSpacing.sm),
@@ -188,7 +194,7 @@ class _SlideHeroArtwork extends StatelessWidget {
       builder: (context, constraints) {
         final maxSide = math.min(
           math.min(constraints.maxWidth, constraints.maxHeight),
-          320.0,
+          332.0,
         );
 
         return Center(
@@ -203,11 +209,11 @@ class _SlideHeroArtwork extends StatelessWidget {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        accentColor.withValues(alpha: 0.16),
-                        accentColor.withValues(alpha: 0.04),
+                        accentColor.withValues(alpha: 0.14),
+                        accentColor.withValues(alpha: 0.03),
                         Colors.transparent,
                       ],
-                      stops: const [0.0, 0.52, 1.0],
+                      stops: const [0.0, 0.54, 1.0],
                     ),
                   ),
                   child: SizedBox.square(dimension: maxSide),
@@ -242,4 +248,3 @@ class _SlideHeroArtwork extends StatelessWidget {
     );
   }
 }
-

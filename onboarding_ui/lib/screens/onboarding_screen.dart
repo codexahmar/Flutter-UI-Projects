@@ -7,6 +7,7 @@ import 'package:onboarding_ui/widgets/onboarding_complete_sheet.dart';
 import 'package:onboarding_ui/widgets/onboarding_footer.dart';
 import 'package:onboarding_ui/widgets/onboarding_slide_view.dart';
 import 'package:onboarding_ui/widgets/onboarding_top_bar.dart';
+import 'package:onboarding_ui/widgets/studio_rim_light.dart';
 
 /// Interactive onboarding flow driven continuously by horizontal page physics.
 class OnboardingScreen extends StatefulWidget {
@@ -99,12 +100,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             backgroundColor: livePalette.canvas,
             body: Stack(
               children: [
+                StudioRimLight(accentColor: livePalette.accent, page: page),
                 child!,
                 Positioned(
                   top: padding.top + OnboardingSpacing.md,
                   left: OnboardingSpacing.xl,
                   right: OnboardingSpacing.xl,
                   child: OnboardingTopBar(
+                    currentPage: _currentPage,
+                    totalPages: totalPages,
                     palette: livePalette,
                     showSkip: !isLastPage,
                     onSkip: () => _goToPage(totalPages - 1),
@@ -151,4 +155,3 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
-

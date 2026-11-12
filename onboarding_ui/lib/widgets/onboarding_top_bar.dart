@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:onboarding_ui/models/onboarding_slide.dart';
 import 'package:onboarding_ui/theme/app_theme.dart';
 
-/// Top bar with geometric brand mark and quiet Skip action.
+/// Top bar featuring a rolling tabular step odometer and quiet Skip action.
 class OnboardingTopBar extends StatelessWidget {
+  final int currentPage;
+  final int totalPages;
   final SlidePalette palette;
   final bool showSkip;
   final VoidCallback onSkip;
 
   const OnboardingTopBar({
     super.key,
+    required this.currentPage,
+    required this.totalPages,
     required this.palette,
     required this.showSkip,
     required this.onSkip,
@@ -18,28 +22,56 @@ class OnboardingTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final stepNumber = '${currentPage + 1}'.padLeft(2, '0');
+    final totalNumber = '$totalPages'.padLeft(2, '0');
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
     return Row(
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: palette.accent,
-                borderRadius: BorderRadius.circular(OnboardingRadius.sm - 2),
-              ),
-              child: const Icon(
-                Icons.layers_rounded,
-                color: OnboardingColors.inkOnAccent,
-                size: 17,
-              ),
+        Semantics(
+          label: 'Step ${currentPage + 1} of $totalPages',
+          child: ExcludeSemantics(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRect(
+                  child: AnimatedSwitcher(
+                    duration: Duration(milliseconds: reduceMotion ? 0 : 220),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) {
+                      if (reduceMotion) return child;
+                      final offsetTween = Tween<Offset>(
+                        begin: const Offset(0, 0.7),
+                        end: Offset.zero,
+                      );
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: offsetTween.animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Text(
+                      stepNumber,
+                      key: ValueKey(currentPage),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: OnboardingColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                Text(
+                  ' / $totalNumber',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: palette.secondaryText.withValues(alpha: 0.72),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: OnboardingSpacing.sm),
-            Text('UIForge AI', style: textTheme.titleMedium),
-          ],
+          ),
         ),
         const Spacer(),
         AnimatedOpacity(
