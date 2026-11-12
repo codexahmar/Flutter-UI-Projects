@@ -10,6 +10,7 @@ A curated showcase of handcrafted **Flutter UI concepts, micro-interactions, and
 | **Ride Tracking UI** | Dark Midnight Slate vector street map, multi-stop route booking, pickup PIN flow & custom snackbar | [Browse Code](./Ride%20Tracking%20UI/lib) | [README](./Ride%20Tracking%20UI/README.md) |
 | **Onboarding UI** | Scroll-driven `PageView` parallax, swipe rim light, rolling step odometer & morphing progress CTA | [Browse Code](./Onboarding/lib) | [README](./Onboarding/README.md) |
 | **Pinterest UI Clone** | Two-column staggered masonry wall, shimmer loading skeletons, Hero pin viewer & tab navigation | [Browse Code](./Pinterest%20UI/lib) | [README](./Pinterest%20UI/README.md) |
+| **Furniture Marketplace UI** | Architectural Dribbble-inspired concept, fluid Hero flights, tactile micro-interactions & floating nav bar | [Browse Code](./Furniture%20Marketplace/lib) | [README](./Furniture%20Marketplace/README.md) |
 
 ---
 
@@ -64,6 +65,18 @@ A crisp Flutter recreation of the Pinterest mobile interface featuring two-colum
 - **Masonry Wall & Hero Viewer**: Pull-to-refresh pin wall, shimmer loading placeholders, and Hero image transitions into creator details and recommendations.
 
 **[Explore Pinterest UI Code →](./Pinterest%20UI/lib)** · **[Full Project README](./Pinterest%20UI/README.md)**
+
+---
+
+### 5. [Furniture Marketplace UI](./Furniture%20Marketplace/lib)
+
+A modern, minimal Flutter e-commerce UI concept for an architectural furniture marketplace, inspired by Dribbble trends with clean typography and editorial product presentation.
+
+<img src="Furniture%20Marketplace/assets/images/dribbble_original.png" width="420" alt="Furniture Marketplace UI Showcase" />
+
+- **Editorial & Tactile Interactions**: Fluid Hero product transitions, animated CTA micro-interactions, top in-app notification banner, architectural typography, and a floating navigation bar.
+
+**[Explore Furniture Marketplace Code →](./Furniture%20Marketplace/lib)** · **[Full Project README](./Furniture%20Marketplace/README.md)**
 
 ---
 
