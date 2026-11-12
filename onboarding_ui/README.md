@@ -1,17 +1,20 @@
-# onboarding_ui
+# Onboarding UI
 
-A new Flutter project.
+A dark-mode Flutter onboarding flow built with scroll-driven `PageView` parallax, swipe-tracked studio rim lighting, a vertical-rolling step odometer, and a morphing radial progress CTA.
 
-## Getting Started
+## Demo
 
-This project is a starting point for a Flutter application.
+<img src="demo.gif" width="300" alt="Onboarding UI Demo" />
 
-A few resources to get you started if this is your first Flutter project:
+## Highlights
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- **Scroll-Driven Choreography**: Continuous `PageView` depth parallax, subtle 3D Y-tilt on hero renders, and live `SlidePalette.lerp` background interpolation (`OnboardingScreen`, `OnboardingSlideView`).
+- **Studio Rim Lighting & Odometer**: Swipe-tracked top-edge radial wash (`StudioRimLight`) paired with a clipped vertical-rolling tabular step counter (`OnboardingTopBar`).
+- **Morphing Progress Action**: Custom-painted radial progress ring (`ProgressNextButton`) that expands smoothly into the final `Start building` pill and opens `OnboardingCompleteSheet`.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Quick Start
+
+```bash
+flutter pub get
+flutter run
+```
