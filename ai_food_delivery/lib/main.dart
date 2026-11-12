@@ -1,42 +1,33 @@
 import 'package:flutter/material.dart';
-
-import 'ai_food_discovery_screen.dart';
-import 'app_theme.dart';
+import 'package:flutter/services.dart';
+import 'package:ai_food_delivery/screens/food_discovery_screen.dart';
+import 'package:ai_food_delivery/theme/app_theme.dart';
 
 void main() {
-  runApp(const AiFoodDeliveryConceptApp());
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: FoodColors.canvas,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+
+  runApp(const FoodDeliveryApp());
 }
 
-class AiFoodDeliveryConceptApp extends StatelessWidget {
-  const AiFoodDeliveryConceptApp({super.key});
+class FoodDeliveryApp extends StatelessWidget {
+  const FoodDeliveryApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AI Food Delivery Concept',
+      title: 'Food Delivery',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark,
-      theme: AppTheme.darkTheme,
-      builder: (context, child) {
-        return ScrollConfiguration(
-          behavior: const _NoGlowScrollBehavior(),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
-      home: const AiFoodDiscoveryScreen(),
+      theme: AppTheme.dark(),
+      home: const FoodDiscoveryScreen(),
     );
-  }
-}
-
-class _NoGlowScrollBehavior extends MaterialScrollBehavior {
-  const _NoGlowScrollBehavior();
-
-  @override
-  Widget buildOverscrollIndicator(
-    BuildContext context,
-    Widget child,
-    ScrollableDetails details,
-  ) {
-    return child;
   }
 }
